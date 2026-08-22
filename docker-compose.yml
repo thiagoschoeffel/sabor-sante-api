@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: saborsante-postgres
+    environment:
+      POSTGRES_DB: saborsante
+      POSTGRES_USER: saborsante
+      POSTGRES_PASSWORD: saborsante
+    ports:
+      - "5432:5432"
+    volumes:
+      - saborsante_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  saborsante_postgres_data:
