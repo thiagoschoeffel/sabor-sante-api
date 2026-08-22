@@ -26,6 +26,7 @@ public class ClienteRepository
                 id, nome, telefone 
             FROM 
                 clientes 
+            WHERE ativo = TRUE
             ORDER BY id
             """,
             connection
@@ -59,8 +60,8 @@ public class ClienteRepository
                 id, nome, telefone 
             FROM 
                 clientes 
-            WHERE 
-                id = @id
+            WHERE id = @id
+                AND ativo = TRUE
             """,
             connection
         );
@@ -158,8 +159,10 @@ public class ClienteRepository
 
         await using var command = new NpgsqlCommand(
             """
-            DELETE FROM clientes
+            UPDATE clientes
+            SET ativo = FALSE
             WHERE id = @id
+                AND ativo = TRUE
             """,
             connection
         );
