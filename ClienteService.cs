@@ -98,4 +98,32 @@ public class ClienteService
 
         return Resultado<bool>.Ok(true);
     }
+
+    public async Task<Resultado<bool>> ReativarAsync(int id)
+    {
+        var resultado = await _repository.ReativarAsync(id);
+
+        if (resultado == ResultadoReativacaoCliente.Conflito)
+        {
+            return Resultado<bool>.Falha(
+                "Não é possível reativar o cliente porque o telefone está sendo utilizado por outro cliente ativo.",
+                TipoErro.Conflito
+            );
+        }
+
+        if (resultado == ResultadoReativacaoCliente.NaoEncontrado)
+        {
+            return Resultado<bool>.Ok(false);
+        }
+
+        if (resultado == ResultadoReativacaoCliente.JaAtivo)
+        {
+            return Resultado<bool>.Falha(
+                "O cliente já está ativo.",
+                TipoErro.Conflito
+            );
+        }
+
+        return Resultado<bool>.Ok(true);
+    }
 }

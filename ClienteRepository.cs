@@ -7,6 +7,14 @@ public enum ResultadoAtualizacaoCliente
     Conflito
 }
 
+public enum ResultadoReativacaoCliente
+{
+    Reativado,
+    NaoEncontrado,
+    JaAtivo,
+    Conflito
+}
+
 public class ClienteRepository
 {
     private readonly NpgsqlDataSource _dataSource;
@@ -172,5 +180,57 @@ public class ClienteRepository
         var linhasAfetadas = await command.ExecuteNonQueryAsync();
 
         return linhasAfetadas > 0;
+    }
+
+    public async Task<ResultadoReativacaoCliente> ReativarAsync(int id)
+    {
+        await using var connection = await _dataSource.OpenConnectionAsync();
+
+        try
+        {
+            await using var command = new NpgsqlCommand(
+                """
+                UPDATE clientes
+                SET ativo = TRUE
+                WHERE id = @id
+                    AND ativo = FALSE
+                """,
+                connection
+            );
+
+            command.Parameters.AddWithValue("id", id);
+
+            var linhasAfetadas = await command.ExecuteNonQueryAsync();
+
+            if (linhasAfetadas > 0)
+            {
+                return ResultadoReativacaoCliente.Reativado;
+            }
+
+            await using var verificarCommand = new NpgsqlCommand(
+                """
+                SELECT ativo
+                FROM clientes
+                WHERE id = @id
+                """,
+                connection
+            );
+
+            verificarCommand.Parameters.AddWithValue("id", id);
+
+            var ativo = await verificarCommand.ExecuteScalarAsync();
+
+            if (ativo is null)
+            {
+                return ResultadoReativacaoCliente.NaoEncontrado;
+            }
+
+            return ResultadoReativacaoCliente.JaAtivo;
+        }
+        catch (PostgresException ex)
+            when (ex.SqlState == PostgresErrorCodes.UniqueViolation)
+        {
+            return ResultadoReativacaoCliente.Conflito;
+        }
     }
 }

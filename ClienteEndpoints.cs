@@ -106,5 +106,35 @@ public static class ClienteEndpoints
 
             return Results.NoContent();
         });
+
+        app.MapPatch("/clientes/{id}/reativar", async (int id, ClienteService service) =>
+        {
+            var resultado = await service.ReativarAsync(id);
+
+            if (!resultado.Sucesso)
+            {
+                return resultado.TipoErro switch
+                {
+                    TipoErro.Conflito =>
+                        Results.Conflict(new
+                        {
+                            erro = resultado.Erro
+                        }),
+
+                    _ =>
+                        Results.BadRequest(new
+                        {
+                            erro = resultado.Erro
+                        })
+                };
+            }
+
+            if (!resultado.Valor)
+            {
+                return Results.NotFound();
+            }
+
+            return Results.NoContent();
+        });
     }
 }
