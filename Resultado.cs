@@ -1,6 +1,7 @@
 public enum TipoErro
 {
     Validacao,
+    NaoEncontrado,
     Conflito
 }
 

@@ -17,8 +17,6 @@ A evolução do projeto busca conciliar dois objetivos:
 
 ## Princípios do estudo
 
-O desenvolvimento segue algumas premissas:
-
 - começar com a solução mais simples possível;
 - evitar abstrações antes de existir um problema que as justifique;
 - entender o funcionamento das tecnologias antes de utilizar ferramentas que escondam sua complexidade;
@@ -89,7 +87,6 @@ Conceitos estudados:
 - PostgreSQL em Docker;
 - Docker Compose;
 - volumes persistentes;
-- conexão entre aplicação e banco;
 - connection strings;
 - Npgsql;
 - SQL manual;
@@ -106,8 +103,6 @@ Conceitos estudados:
 - mapeamento manual entre dados relacionais e objetos C#;
 - identidade gerada pelo PostgreSQL;
 - `INSERT ... RETURNING`.
-
-Nesta etapa, todo o CRUD de clientes passou a utilizar o PostgreSQL como fonte de verdade.
 
 ---
 
@@ -145,8 +140,7 @@ Conceitos estudados:
 - service;
 - separação entre HTTP, regras da aplicação e persistência;
 - dependências por construtor;
-- redução de acoplamento;
-- diferença entre tipos externos e dados internos validados.
+- redução de acoplamento.
 
 ---
 
@@ -184,54 +178,30 @@ Conceitos estudados:
 - diferença entre erro do cliente e erro interno da aplicação;
 - uso do sistema de tipos para representar garantias.
 
-O fluxo passou a seguir:
-
-```text
-Entrada externa
-    ↓
-normalização
-    ↓
-validação
-    ↓
-dados internos válidos
-    ↓
-persistência
-```
-
 ---
 
 ### Etapa 5 — Result Pattern e tratamento de erros
 
 A aplicação deixou de utilizar exceções para representar erros esperados de validação.
 
-Foi criado um `Resultado<T>` para representar explicitamente sucesso ou falha de uma operação.
+Foi criado um `Resultado<T>` para representar explicitamente sucesso ou falha.
 
-Exemplo conceitual:
-
-```text
-Resultado<Cliente>
-
-Sucesso
-├── Valor = Cliente
-└── Erro = null
-
-Falha
-├── Valor = null
-└── Erro = mensagem
-```
-
-Também foram introduzidos tipos de erro:
+Tipos de erro atuais:
 
 ```text
 Validacao
+NaoEncontrado
 Conflito
 ```
 
-Permitindo que a camada HTTP traduza erros da aplicação para respostas adequadas:
+Tradução atual para HTTP:
 
 ```text
 Validacao
 → 400 Bad Request
+
+NaoEncontrado
+→ 404 Not Found
 
 Conflito
 → 409 Conflict
@@ -242,13 +212,10 @@ Conceitos estudados:
 - generics;
 - `Resultado<T>`;
 - factory methods;
-- `Ok`;
-- `Falha`;
 - enums;
 - switch expressions;
 - diferença entre exceções inesperadas e erros esperados;
-- separação entre erro da aplicação e protocolo HTTP;
-- mapeamento de erros para status codes.
+- separação entre erro da aplicação e protocolo HTTP.
 
 ---
 
@@ -256,19 +223,7 @@ Conceitos estudados:
 
 Foi introduzida a regra de unicidade de telefone.
 
-Inicialmente poderia parecer suficiente consultar antes de inserir:
-
-```text
-verifica telefone
-    ↓
-não existe
-    ↓
-insere
-```
-
-Porém, duas requisições simultâneas poderiam passar pela mesma verificação.
-
-Por isso a integridade passou a ser garantida também pelo PostgreSQL.
+A garantia passou a existir também no PostgreSQL para evitar problemas de concorrência.
 
 Conceitos estudados:
 
@@ -304,38 +259,24 @@ SET ativo = FALSE
 WHERE id = @id;
 ```
 
-O objetivo é preservar histórico para futuras relações como:
-
-- pedidos;
-- endereços;
-- planos;
-- pagamentos;
-- entregas.
-
-Clientes inativos permanecem no banco, mas não aparecem nas consultas normais da API.
+Clientes inativos permanecem no banco e preservam histórico.
 
 Conceitos estudados:
 
 - soft delete;
 - preservação histórica;
 - estado de negócio;
-- diferença entre remoção HTTP e exclusão física no banco;
-- filtragem de registros ativos;
-- integridade referencial futura.
+- diferença entre remoção HTTP e exclusão física no banco.
 
 ---
 
 ### Etapa 8 — Unicidade parcial de telefone
 
-Com o soft delete surgiu uma nova necessidade:
-
-um cliente inativo não deveria reservar permanentemente um número de telefone.
-
-A regra adotada passou a ser:
+A regra atual é:
 
 > O telefone deve ser único entre clientes ativos.
 
-O PostgreSQL utiliza um índice único parcial:
+Isso é garantido por um índice único parcial:
 
 ```sql
 CREATE UNIQUE INDEX ux_clientes_telefone_ativo
@@ -343,29 +284,18 @@ ON clientes (telefone)
 WHERE ativo = TRUE;
 ```
 
-Assim:
-
-```text
-cliente ativo + telefone X
-→ outro ativo com telefone X não é permitido
-
-cliente inativo + telefone X
-→ novo cliente ativo com telefone X é permitido
-```
-
 Conceitos estudados:
 
 - partial indexes;
 - partial unique indexes;
 - identidade técnica vs chave de negócio;
-- unicidade condicional;
-- regras de integridade relacionadas ao estado do registro.
+- unicidade condicional.
 
 ---
 
 ### Etapa 9 — Reativação de clientes
 
-Clientes inativos podem ser reativados por meio de uma operação explícita:
+Clientes inativos podem ser reativados com:
 
 ```text
 PATCH /clientes/{id}/reativar
@@ -387,80 +317,130 @@ telefone utilizado por outro cliente ativo
 → 409 Conflict
 ```
 
-A reativação representa uma transição de estado do domínio:
-
-```text
-Ativo
-  ↓
-Inativo
-  ↓
-Ativo novamente
-```
-
 Conceitos estudados:
 
 - `PATCH`;
 - transições de estado;
 - endpoints orientados à intenção;
-- diferença entre alterar um campo e executar uma operação de negócio;
-- tratamento de conflitos durante reativação.
+- conflitos durante reativação.
 
 ---
 
-### Etapa 10 — Versionamento do banco de dados
+### Etapa 10 — Versionamento do banco
 
-A estrutura inicial do PostgreSQL passou a ser documentada e versionada no repositório.
+A estrutura do PostgreSQL passou a ser documentada e versionada no repositório.
 
 Estrutura atual:
 
 ```text
 database/
-└── 001_create_clientes.sql
+├── 001_create_clientes.sql
+└── 002_create_clientes_enderecos.sql
 ```
 
-O objetivo é permitir que o schema faça parte do histórico do projeto juntamente com o código-fonte.
+O projeto ainda utiliza scripts SQL simples.
 
-Neste momento o projeto utiliza scripts SQL simples.
+Ferramentas de migrations serão introduzidas posteriormente, quando houver necessidade concreta.
 
-Ferramentas de migrations serão introduzidas posteriormente, quando houver necessidade suficiente para justificar essa evolução.
+---
+
+### Etapa 11 — Endereços de clientes
+
+Foi introduzido o primeiro relacionamento real do domínio:
+
+```text
+Cliente
+1 ───── N Endereços
+```
+
+Um cliente pode possuir vários endereços, por exemplo:
+
+```text
+Cliente
+├── Casa
+├── Trabalho
+└── Outro
+```
+
+O relacionamento é garantido no PostgreSQL por chave estrangeira:
+
+```text
+clientes.id
+    ↑
+clientes_enderecos.cliente_id
+```
 
 Conceitos estudados:
 
-- schema versionado;
-- reprodutibilidade;
-- infraestrutura como parte do código;
-- evolução incremental do banco de dados.
+- relacionamento um-para-muitos;
+- foreign keys;
+- integridade referencial;
+- recursos dependentes;
+- rotas aninhadas;
+- ownership / pertencimento;
+- diferença entre recurso inexistente e coleção vazia.
 
-## Modelo atual de cliente
+---
 
-Atualmente um cliente possui:
+### Etapa 12 — CRUD de endereços
+
+Endpoints atuais:
+
+```text
+GET    /clientes/{clienteId}/enderecos
+GET    /clientes/{clienteId}/enderecos/{enderecoId}
+POST   /clientes/{clienteId}/enderecos
+PUT    /clientes/{clienteId}/enderecos/{enderecoId}
+DELETE /clientes/{clienteId}/enderecos/{enderecoId}
+PATCH  /clientes/{clienteId}/enderecos/{enderecoId}/reativar
+```
+
+Regras atuais:
+
+- o cliente precisa existir;
+- o endereço precisa pertencer ao cliente informado na rota;
+- endereços inativos não aparecem nas consultas normais;
+- exclusão de endereço utiliza soft delete;
+- endereços inativos podem ser reativados;
+- campos obrigatórios são validados;
+- campos opcionais podem ser armazenados como `NULL`.
+
+Conceitos estudados:
+
+- criação de recurso filho;
+- uso do identificador do pai vindo da rota;
+- prevenção de inconsistência entre URL e body;
+- `DBNull.Value`;
+- leitura segura de colunas nullable;
+- atualização de recursos dependentes;
+- soft delete em entidades filhas;
+- reativação de recursos dependentes;
+- proteção contra acesso cruzado entre clientes.
+
+## Modelo atual
 
 ```text
 Cliente
 ├── Id
 ├── Nome
 ├── Telefone
-└── Ativo
+├── Ativo
+└── Endereços
+     ├── Identificação
+     ├── Logradouro
+     ├── Número
+     ├── Complemento
+     ├── Bairro
+     ├── Cidade
+     ├── CEP
+     └── Ativo
 ```
-
-Regras atuais:
-
-- nome obrigatório;
-- telefone obrigatório;
-- telefone normalizado para apenas dígitos;
-- telefone único entre clientes ativos;
-- clientes não são removidos fisicamente;
-- clientes inativos podem ser reativados;
-- conflito de telefone é protegido também pelo PostgreSQL.
 
 ## Próximas evoluções
 
-As próximas etapas serão introduzidas conforme surgirem necessidades reais no domínio.
-
 Entre os assuntos planejados estão:
 
-- endereços de clientes;
-- relacionamento um-para-muitos;
+- testes automatizados;
 - pedidos;
 - itens de pedido;
 - cardápios;
@@ -469,7 +449,6 @@ Entre os assuntos planejados estão:
 - embalagem;
 - entregadores;
 - rotas de entrega;
-- testes automatizados;
 - autenticação e autorização;
 - migrations;
 - Entity Framework Core;
@@ -479,8 +458,8 @@ Entre os assuntos planejados estão:
 - caching;
 - jobs;
 - mensageria;
-- concorrência;
 - transações;
+- concorrência;
 - performance;
 - arquitetura de software;
 - escalabilidade.

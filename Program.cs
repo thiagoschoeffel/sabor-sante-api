@@ -9,8 +9,12 @@ var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
 var dataSource = dataSourceBuilder.Build();
 
 builder.Services.AddSingleton(dataSource);
+
 builder.Services.AddScoped<ClienteRepository>();
 builder.Services.AddScoped<ClienteService>();
+
+builder.Services.AddScoped<ClienteEnderecoRepository>();
+builder.Services.AddScoped<ClienteEnderecoService>();
 
 builder.Services.AddOpenApi();
 
@@ -32,5 +36,6 @@ app.MapGet("/health", () =>
 });
 
 app.MapClienteEndpoints();
+app.MapClienteEnderecoEndpoints();
 
 app.Run();
