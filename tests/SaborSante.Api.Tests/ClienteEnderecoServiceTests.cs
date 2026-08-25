@@ -1322,4 +1322,40 @@ public class ClienteEnderecoServiceTests
             resultado.Erro
         );
     }
+
+    [Fact]
+    public async Task ReativarAsync_deve_retornar_nao_encontrado_quando_cliente_nao_existir()
+    {
+        var clienteRepository = new FakeClienteRepository();
+
+        var enderecoRepository =
+            new FakeClienteEnderecoRepository();
+
+        var service = new ClienteEnderecoService(
+            clienteRepository,
+            enderecoRepository
+        );
+
+        var resultado = await service.ReativarAsync(
+            999,
+            10
+        );
+
+        Assert.False(resultado.Sucesso);
+
+        Assert.Equal(
+            TipoErro.NaoEncontrado,
+            resultado.TipoErro
+        );
+
+        Assert.Equal(
+            "Cliente não encontrado.",
+            resultado.Erro
+        );
+
+        Assert.Equal(
+            0,
+            enderecoRepository.QuantidadeChamadasReativarAsync
+        );
+    }
 }
