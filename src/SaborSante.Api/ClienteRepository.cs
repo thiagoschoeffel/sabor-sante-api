@@ -15,7 +15,7 @@ public enum ResultadoReativacaoCliente
     Conflito
 }
 
-public class ClienteRepository
+public class ClienteRepository : IClienteRepository
 {
     private readonly NpgsqlDataSource _dataSource;
 

@@ -11,6 +11,10 @@ var dataSource = dataSourceBuilder.Build();
 builder.Services.AddSingleton(dataSource);
 
 builder.Services.AddScoped<ClienteRepository>();
+builder.Services.AddScoped<IClienteRepository>(
+    serviceProvider =>
+        serviceProvider.GetRequiredService<ClienteRepository>()
+);
 builder.Services.AddScoped<ClienteService>();
 
 builder.Services.AddScoped<ClienteEnderecoRepository>();
