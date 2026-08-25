@@ -948,6 +948,66 @@ Não existe atualmente um estado `Conflito` específico em `ResultadoReativacaoE
 
 ---
 
+## Etapa 19 — Testes de integração com PostgreSQL
+
+Após os testes unitários dos services, surgiu uma nova lacuna:
+
+os fakes provavam o comportamento dos services, mas não verificavam se os repositories, o SQL, o Npgsql e o PostgreSQL funcionavam em conjunto.
+
+Foi criado um banco separado:
+
+saborsante_tests
+
+Os testes de integração passaram a executar:
+
+Repository
+↓
+Npgsql
+↓
+PostgreSQL real
+
+Foram adicionados testes para:
+
+- criação;
+- leitura;
+- atualização;
+- soft delete;
+- reativação;
+- conflitos de unicidade;
+- foreign keys;
+- ownership de endereços;
+- filtros de registros inativos.
+
+Também foi criada uma PostgresFixture para compartilhar o NpgsqlDataSource e centralizar a infraestrutura dos testes.
+
+### Isolamento e concorrência
+
+Ao executar a suíte completa, classes diferentes de testes de integração acessavam o mesmo banco simultaneamente.
+
+Como cada teste executava uma limpeza global do banco, um teste podia apagar dados utilizados por outro.
+
+Isso causou race conditions, violações de foreign key e resultados inconsistentes.
+
+Os testes de integração que compartilham o banco foram agrupados em uma collection do xUnit com paralelização desabilitada.
+
+Conceitos estudados:
+
+- testes unitários vs testes de integração;
+- banco exclusivo para testes;
+- preparação e limpeza de dados;
+- isolamento;
+- estado compartilhado;
+- fixtures;
+- IClassFixture;
+- IAsyncLifetime;
+- concorrência entre testes;
+- race conditions;
+- foreign keys em testes reais;
+- collections do xUnit;
+- DisableParallelization.
+
+---
+
 # Arquitetura atual
 
 A arquitetura continua propositalmente simples:
