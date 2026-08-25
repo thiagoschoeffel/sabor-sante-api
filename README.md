@@ -35,8 +35,7 @@ Cada padrão, abstração ou ferramenta deve surgir a partir de uma necessidade 
 
 - .NET 10
 - C#
-- ASP.NET Core
-- Minimal APIs
+- ASP.NET Core Minimal APIs
 - PostgreSQL
 - Npgsql
 - Docker
@@ -53,33 +52,31 @@ Cada padrão, abstração ou ferramenta deve surgir a partir de uma necessidade 
 SaborSante/
 ├── README.md
 ├── SaborSante.slnx
-│
 ├── src/
 │   └── SaborSante.Api/
 │       ├── database/
 │       │   ├── 001_create_clientes.sql
 │       │   └── 002_create_clientes_enderecos.sql
-│       │
 │       ├── Cliente.cs
 │       ├── ClienteEndpoints.cs
 │       ├── ClienteService.cs
 │       ├── ClienteRepository.cs
 │       ├── IClienteRepository.cs
-│       │
 │       ├── ClienteEndereco.cs
 │       ├── ClienteEnderecoEndpoints.cs
 │       ├── ClienteEnderecoService.cs
 │       ├── ClienteEnderecoRepository.cs
-│       │
+│       ├── IClienteEnderecoRepository.cs
 │       ├── Resultado.cs
 │       ├── Program.cs
 │       ├── docker-compose.yml
 │       └── SaborSante.Api.csproj
-│
 └── tests/
     └── SaborSante.Api.Tests/
         ├── ClienteServiceTests.cs
+        ├── ClienteEnderecoServiceTests.cs
         ├── FakeClienteRepository.cs
+        ├── FakeClienteEnderecoRepository.cs
         └── SaborSante.Api.Tests.csproj
 ```
 
@@ -93,7 +90,7 @@ SaborSante.Api.Tests
 SaborSante.Api
 ```
 
-A aplicação de produção não possui dependência do projeto de testes.
+A aplicação de produção não depende do projeto de testes.
 
 ---
 
@@ -132,7 +129,6 @@ Primeiros endpoints:
 
 ```text
 GET    /health
-
 GET    /clientes
 GET    /clientes/{id}
 POST   /clientes
@@ -164,18 +160,10 @@ Conceitos estudados:
 - identidade gerada pelo banco;
 - `INSERT ... RETURNING`;
 - leitura manual de resultados;
-- mapeamento entre linhas SQL e objetos C#.
-
-Também foram estudados:
-
-```text
-ExecuteScalarAsync
-ExecuteReaderAsync
-ExecuteNonQueryAsync
-```
-
-Além de:
-
+- mapeamento entre linhas SQL e objetos C#;
+- `ExecuteScalarAsync`;
+- `ExecuteReaderAsync`;
+- `ExecuteNonQueryAsync`;
 - `async`;
 - `await`;
 - operações de I/O;
@@ -188,18 +176,18 @@ Além de:
 
 ## Etapa 3 — Separação de responsabilidades
 
-Com o crescimento dos endpoints, o `Program.cs` começou a acumular responsabilidades.
+Com o crescimento do `Program.cs` e dos endpoints, começaram a surgir responsabilidades diferentes dentro do mesmo código.
 
-A aplicação foi progressivamente organizada em:
+A aplicação foi progressivamente separada em:
 
 ```text
 Program.cs
     ↓
 Endpoints
     ↓
-Service
+Services
     ↓
-Repository
+Repositories
     ↓
 PostgreSQL
 ```
@@ -221,25 +209,26 @@ PostgreSQL
 Conceitos estudados:
 
 - extension methods;
-- classes estáticas;
+- organização de endpoints;
 - Dependency Injection;
 - container de DI do ASP.NET Core;
-- constructor injection;
+- dependências por construtor;
 - Singleton;
 - Scoped;
 - Transient;
 - `NpgsqlDataSource`;
-- Repository;
-- Service;
-- separação entre HTTP, regras da aplicação e persistência.
+- repository;
+- service;
+- separação entre HTTP, aplicação e persistência;
+- redução de acoplamento.
 
-Nenhuma interface foi criada nessa etapa porque ainda não existia uma necessidade concreta de substituição do repository.
+Nenhuma interface foi criada inicialmente porque ainda não existia uma necessidade concreta de substituir os repositories.
 
 ---
 
 ## Etapa 4 — Validação e normalização
 
-As primeiras regras de aplicação passaram a existir no `ClienteService`.
+As primeiras regras de aplicação foram introduzidas no `ClienteService`.
 
 Modelo atual:
 
@@ -261,15 +250,15 @@ public record AtualizarClienteRequest(
 );
 ```
 
-Os requests aceitam valores nullable porque representam dados vindos de uma fronteira externa: HTTP.
+Os requests aceitam referências nullable porque representam dados recebidos através de uma fronteira externa: HTTP.
 
 Regras atuais:
 
 - nome obrigatório;
 - telefone obrigatório;
-- remoção de espaços desnecessários no nome;
+- remoção de espaços desnecessários;
 - telefone armazenado apenas com dígitos;
-- tratamento seguro de `null`.
+- tratamento seguro de valores `null`.
 
 Exemplo:
 
@@ -287,13 +276,12 @@ Conceitos estudados:
 - normalização;
 - representação canônica;
 - nullable reference types;
-- `string`;
-- `string?`;
+- `string` vs `string?`;
+- null safety;
 - operador `?.`;
-- `string.IsNullOrWhiteSpace`;
-- diferença entre dados externos e dados já validados internamente.
+- `string.IsNullOrWhiteSpace`.
 
-O fluxo adotado passou a ser:
+O fluxo adotado é:
 
 ```text
 Entrada externa
@@ -307,11 +295,11 @@ Persistência
 
 ---
 
-## Etapa 5 — Result Pattern
+## Etapa 5 — Result Pattern e tratamento de erros
 
-Erros esperados da aplicação deixaram de depender exclusivamente de exceptions.
+Erros esperados deixaram de ser representados exclusivamente por exceptions.
 
-Foi criado um tipo genérico:
+Foi criado:
 
 ```text
 Resultado<T>
@@ -319,7 +307,7 @@ Resultado<T>
 
 para representar explicitamente sucesso ou falha.
 
-Tipos atuais de erro:
+Tipos atuais:
 
 ```text
 Validacao
@@ -327,7 +315,7 @@ NaoEncontrado
 Conflito
 ```
 
-Mapeamento para HTTP:
+Tradução para HTTP:
 
 ```text
 Validacao
@@ -356,24 +344,21 @@ Conceitos estudados:
 
 ## Etapa 6 — Integridade e concorrência
 
-O telefone do cliente passou a possuir uma regra de unicidade.
+Foi introduzida a regra de unicidade de telefone.
 
-Inicialmente a regra foi tratada pela aplicação, mas isso não era suficiente diante de requisições concorrentes.
-
-A garantia passou a existir também no PostgreSQL.
+A garantia passou a existir também no PostgreSQL para evitar problemas de concorrência.
 
 Conceitos estudados:
 
-- constraints;
-- unique constraints;
 - concorrência;
 - race conditions;
-- integridade no banco;
+- constraints;
+- `UNIQUE`;
 - `PostgresException`;
 - SQLSTATE;
-- `23505`;
-- `unique_violation`;
-- tradução de erros do PostgreSQL para erros da aplicação;
+- `23505 - unique_violation`;
+- integridade garantida pelo banco;
+- tradução de erros de persistência;
 - `409 Conflict`.
 
 ---
@@ -382,20 +367,13 @@ Conceitos estudados:
 
 A exclusão física de clientes foi substituída por inativação.
 
-A tabela passou a possuir:
+A tabela possui:
 
 ```sql
 ativo BOOLEAN NOT NULL DEFAULT TRUE
 ```
 
-Antes:
-
-```sql
-DELETE FROM clientes
-WHERE id = @id;
-```
-
-Agora:
+A exclusão lógica utiliza:
 
 ```sql
 UPDATE clientes
@@ -406,31 +384,25 @@ WHERE id = @id
 
 Clientes inativos deixam de aparecer nas consultas normais, mas permanecem armazenados.
 
+O campo `ativo` pertence atualmente ao modelo de persistência e às regras de consulta. Ele não faz parte do record `Cliente`.
+
 Conceitos estudados:
 
 - soft delete;
 - ciclo de vida;
 - preservação histórica;
 - estado de negócio;
-- diferença entre `DELETE` HTTP e `DELETE` SQL.
+- diferença entre `DELETE` HTTP e exclusão física no banco.
 
 ---
 
 ## Etapa 8 — Unicidade parcial de telefone
 
-A regra de negócio adotada passou a ser:
+A regra atual é:
 
 > O telefone deve ser único entre clientes ativos.
 
-Um telefone não funciona como identidade técnica permanente do cliente.
-
-A identidade técnica continua sendo:
-
-```text
-clientes.id
-```
-
-A regra é garantida por um índice único parcial:
+Isso é garantido por:
 
 ```sql
 CREATE UNIQUE INDEX ux_clientes_telefone_ativo
@@ -438,7 +410,17 @@ ON clientes (telefone)
 WHERE ativo = TRUE;
 ```
 
-Isso permite que um cliente inativo tenha o mesmo telefone de um novo cliente ativo, mas impede dois clientes ativos com o mesmo telefone.
+Assim:
+
+```text
+cliente inativo com telefone X
++
+novo cliente ativo com telefone X
+→ permitido
+
+dois clientes ativos com telefone X
+→ não permitido
+```
 
 Conceitos estudados:
 
@@ -453,7 +435,7 @@ Conceitos estudados:
 
 ## Etapa 9 — Reativação de clientes
 
-Foi adicionada uma operação explícita para reativação:
+Clientes inativos podem ser reativados através de:
 
 ```text
 PATCH /clientes/{id}/reativar
@@ -489,14 +471,14 @@ Conceitos estudados:
 - `PATCH`;
 - transições de estado;
 - endpoints orientados à intenção;
-- conflito de estado;
+- conflitos de estado;
 - conflitos de integridade durante transições.
 
 ---
 
 ## Etapa 10 — Versionamento do banco
 
-As alterações realizadas manualmente no PostgreSQL começaram a ser representadas no Git.
+A estrutura do PostgreSQL passou a ser representada no Git através de scripts SQL.
 
 Estrutura atual:
 
@@ -515,15 +497,13 @@ Conceitos estudados:
 - versionamento de schema;
 - reprodução da estrutura do banco;
 - banco como parte versionada do sistema;
-- diferença entre alteração manual e alteração rastreável.
+- diferença entre alterações manuais e alterações rastreáveis.
 
 ---
 
 ## Etapa 11 — Endereços de clientes
 
-Foi introduzido o primeiro relacionamento real entre entidades do domínio.
-
-A regra é:
+Foi introduzido o primeiro relacionamento real do domínio:
 
 ```text
 Cliente
@@ -531,9 +511,7 @@ Cliente
           Endereços
 ```
 
-Um cliente pode possuir múltiplos endereços.
-
-Exemplo:
+Um cliente pode possuir múltiplos endereços:
 
 ```text
 Cliente
@@ -542,15 +520,9 @@ Cliente
 └── Outro
 ```
 
-Isso representa uma necessidade real do negócio: uma entrega pode ser realizada no trabalho em determinado dia e na residência em outro.
+Isso representa uma necessidade real da operação: uma entrega pode ser realizada no trabalho em determinado dia e na residência em outro.
 
-Tabela:
-
-```text
-clientes_enderecos
-```
-
-Relacionamento:
+Relacionamento no banco:
 
 ```text
 clientes.id
@@ -565,85 +537,98 @@ Conceitos estudados:
 - relacionamento um-para-muitos;
 - foreign keys;
 - integridade referencial;
+- recursos dependentes;
 - recursos filhos;
-- nullable no banco;
+- rotas aninhadas;
 - `DBNull.Value`;
 - `reader.IsDBNull`;
-- rotas aninhadas.
+- ownership.
 
 ---
 
 ## Etapa 12 — CRUD e ciclo de vida de endereços
 
-Endpoints atuais:
+Endpoints:
 
 ```text
 GET    /clientes/{clienteId}/enderecos
-
 GET    /clientes/{clienteId}/enderecos/{enderecoId}
-
 POST   /clientes/{clienteId}/enderecos
-
 PUT    /clientes/{clienteId}/enderecos/{enderecoId}
-
 DELETE /clientes/{clienteId}/enderecos/{enderecoId}
-
 PATCH  /clientes/{clienteId}/enderecos/{enderecoId}/reativar
 ```
 
-Regras implementadas:
+Regras:
 
 - o cliente precisa existir;
-- um endereço pertence a um cliente;
-- um endereço de outro cliente não pode ser acessado através da rota incorreta;
+- o endereço precisa pertencer ao cliente informado;
 - endereços inativos não aparecem nas consultas normais;
 - exclusão utiliza soft delete;
 - endereços podem ser reativados;
 - campos obrigatórios são validados;
 - campos opcionais podem ser armazenados como `NULL`;
-- o `clienteId` da rota é a fonte de verdade para a relação.
+- `clienteId` da rota é a fonte de verdade para o relacionamento.
 
 Exemplo de ownership:
 
 ```text
-/endereco 10 pertence ao cliente 2
+endereço 10 pertence ao cliente 2
 
 GET /clientes/2/enderecos/10
-→ 200
+→ 200 OK
 
 GET /clientes/3/enderecos/10
-→ 404
+→ 404 Not Found
 ```
 
 Conceitos estudados:
 
 - ownership;
-- autorização estrutural de recurso;
 - pertencimento;
 - recurso pai;
 - recurso filho;
 - coleção vazia vs recurso inexistente;
-- soft delete em recurso dependente;
-- reativação em recurso dependente.
+- soft delete em recursos dependentes;
+- reativação;
+- proteção contra acesso cruzado entre clientes.
 
 ---
 
-## Etapa 13 — Testes unitários
+## Etapa 13 — Estrutura da solution e projeto de testes
 
-Com o crescimento das regras do `ClienteService`, os testes manuais realizados pelo Insomnia deixaram de ser suficientes para garantir que mudanças futuras não quebrassem comportamentos já implementados.
+Com o crescimento da aplicação, o repositório passou a possuir mais de um projeto .NET.
 
-Foi criado um projeto separado:
+A estrutura foi reorganizada em:
 
 ```text
-tests/
-└── SaborSante.Api.Tests/
+SaborSante/
+├── SaborSante.slnx
+├── src/
+│   └── SaborSante.Api/
+└── tests/
+    └── SaborSante.Api.Tests/
 ```
 
-utilizando **xUnit**.
+Foi criada uma solution no formato `.slnx`, utilizado pelo .NET 10.
 
-O primeiro teste foi propositalmente simples para verificar o funcionamento da infraestrutura de testes.
+Conceitos estudados:
 
-Depois disso, começaram os testes reais do `ClienteService`.
+- solution;
+- projetos `.csproj`;
+- referência entre projetos;
+- separação `src/` e `tests/`;
+- dependência unidirecional entre projeto de testes e produção.
+
+---
+
+## Etapa 14 — Primeiros testes unitários
+
+Foi introduzido **xUnit**.
+
+O primeiro teste simples serviu apenas para comprovar que a infraestrutura estava funcionando.
+
+Depois começaram os testes reais dos services.
 
 Conceitos estudados:
 
@@ -674,49 +659,37 @@ verificar resultado
 
 ---
 
-## Etapa 14 — Inversão de dependência motivada por testes
+## Etapa 15 — Interfaces motivadas por testabilidade
 
-Ao tentar testar `ClienteService`, surgiu um problema concreto.
-
-O service dependia diretamente de:
-
-```text
-ClienteRepository
-```
-
-que por sua vez dependia de:
-
-```text
-NpgsqlDataSource
-↓
-PostgreSQL
-```
-
-O primeiro teste precisou temporariamente fazer algo equivalente a:
-
-```csharp
-new ClienteService(null!)
-```
-
-Isso evidenciou o acoplamento.
-
-Foi então introduzida:
-
-```csharp
-IClienteRepository
-```
-
-A estrutura passou de:
+Ao tentar testar `ClienteService`, surgiu um problema concreto:
 
 ```text
 ClienteService
       ↓
 ClienteRepository
       ↓
+NpgsqlDataSource
+      ↓
 PostgreSQL
 ```
 
-para:
+O service estava diretamente acoplado à implementação concreta de persistência.
+
+O primeiro teste precisou temporariamente utilizar:
+
+```csharp
+new ClienteService(null!)
+```
+
+Isso evidenciou a dificuldade de substituir a dependência.
+
+Foi criada:
+
+```text
+IClienteRepository
+```
+
+e a estrutura passou a ser:
 
 ```text
 ClienteService
@@ -724,36 +697,47 @@ ClienteService
 IClienteRepository
       ↑
 ClienteRepository
-      ↓
-PostgreSQL
 ```
 
-Essa foi a primeira interface do projeto criada por uma necessidade concreta, e não antecipadamente.
+Posteriormente, ao testar `ClienteEnderecoService`, apareceu o mesmo problema com a persistência de endereços.
+
+Foi então criada:
+
+```text
+IClienteEnderecoRepository
+```
+
+A estrutura atual do service de endereços é:
+
+```text
+ClienteEnderecoService
+        ├── IClienteRepository
+        └── IClienteEnderecoRepository
+```
+
+As interfaces não foram criadas antecipadamente. Elas surgiram quando o acoplamento começou a impedir testes isolados.
 
 Conceitos estudados:
 
-- interface;
-- contrato;
-- implementação concreta;
+- interfaces;
+- contratos;
+- implementações concretas;
 - substituição de dependências;
-- inversão de dependência;
+- inversão de dependência aplicada na prática;
 - redução de acoplamento;
-- Dependency Injection através de interfaces.
+- Dependency Injection através de abstrações.
+
+O Dependency Inversion Principle ainda poderá ser estudado formalmente em uma etapa posterior. Neste momento, o conceito surgiu primeiro através de um problema concreto.
 
 ---
 
-## Etapa 15 — Fake manual
+## Etapa 16 — Fakes manuais
 
-Para testar o service sem PostgreSQL, foi criada uma implementação manual de:
-
-```text
-IClienteRepository
-```
-
-chamada:
+Antes de utilizar bibliotecas de mocks, foram criados fakes manualmente:
 
 ```text
 FakeClienteRepository
+FakeClienteEnderecoRepository
 ```
 
 Nos testes:
@@ -766,28 +750,43 @@ IClienteRepository
 FakeClienteRepository
 ```
 
-O fake permite configurar resultados.
+e:
+
+```text
+ClienteEnderecoService
+        ↓
+IClienteEnderecoRepository
+        ↑
+FakeClienteEnderecoRepository
+```
+
+Os fakes permitem:
+
+- configurar resultados;
+- simular recursos encontrados ou inexistentes;
+- registrar argumentos recebidos;
+- contar quantidade de chamadas;
+- verificar IDs enviados pelo service;
+- testar sem PostgreSQL.
 
 Exemplo conceitual:
 
-```text
-ClienteParaRetornar = cliente
+```csharp
+repository.ClienteParaRetornar = cliente;
 ```
 
 ou:
 
-```text
-ClienteParaRetornar = null
+```csharp
+repository.ClienteParaRetornar = null;
 ```
 
-Também permite observar interações:
+Também foram utilizados contadores como:
 
 ```text
-NomeRecebido
-TelefoneRecebido
-IdRecebidoAtualizar
 QuantidadeChamadasCriarAsync
 QuantidadeChamadasAtualizarAsync
+QuantidadeChamadasExcluirAsync
 QuantidadeChamadasReativarAsync
 ```
 
@@ -795,55 +794,73 @@ Conceitos estudados:
 
 - test doubles;
 - fake manual;
-- estado configurável;
 - comportamento configurável;
+- estado configurável;
 - `Task.FromResult`;
-- object initializer;
-- observação de chamadas;
+- object initializers;
+- verificação de estado;
+- verificação de interação;
 - verificação de argumentos;
-- verificação da quantidade de chamadas.
+- quantidade de chamadas.
 
-Ainda não foi introduzida nenhuma biblioteca de mocks.
-
-A intenção foi entender primeiro o mecanismo manualmente.
+Nenhuma biblioteca externa de mocks foi introduzida até o momento.
 
 ---
 
-## Etapa 16 — Cobertura atual do ClienteService
+## Etapa 17 — Testes unitários do ClienteService
 
-A suíte possui atualmente **17 testes reais**, todos relacionados a comportamentos da aplicação.
+O `ClienteService` possui testes cobrindo suas principais operações.
 
-### Criação de clientes
+### Criação
 
-São testados cenários como:
+São testados:
 
-- nome vazio;
-- telefone vazio;
+- nome obrigatório;
+- telefone obrigatório;
 - nome `null`;
 - telefone `null`;
 - telefone sem dígitos;
-- criação válida;
-- telefone em conflito;
 - normalização de nome;
 - normalização de telefone;
-- repository não chamado quando a validação falha;
-- repository chamado exatamente uma vez em cenário válido;
-- argumentos normalizados enviados ao repository.
+- criação válida;
+- conflito de telefone;
+- repository não chamado em validação inválida;
+- repository chamado uma única vez em cenário válido;
+- valores normalizados enviados à persistência.
 
-### Atualização de clientes
+### Atualização
 
 São testados:
 
 - atualização bem-sucedida;
 - cliente não encontrado;
-- telefone em conflito;
+- conflito de telefone;
 - normalização;
 - validação;
-- repository não chamado quando os dados são inválidos;
-- repository chamado exatamente uma vez quando os dados são válidos;
-- id correto enviado ao repository.
+- repository não chamado com dados inválidos;
+- repository chamado uma única vez em cenário válido;
+- argumentos enviados ao repository.
 
-### Reativação de clientes
+### Exclusão
+
+A exclusão de cliente foi trazida para o mesmo fluxo dos demais comportamentos:
+
+```text
+ClienteEndpoints
+      ↓
+ClienteService
+      ↓
+IClienteRepository
+```
+
+São testados:
+
+- exclusão/inativação bem-sucedida;
+- nenhuma linha inativada;
+- quantidade de chamadas;
+- ID enviado ao repository.
+
+### Reativação
 
 São testados:
 
@@ -851,28 +868,89 @@ São testados:
 - cliente não encontrado;
 - cliente já ativo;
 - conflito de telefone;
-- id enviado ao repository;
-- quantidade de chamadas ao repository.
+- quantidade de chamadas;
+- ID enviado ao repository.
 
-Os testes verificam tanto:
+---
+
+## Etapa 18 — Testes unitários do ClienteEnderecoService
+
+O `ClienteEnderecoService` também passou a possuir testes isolados.
+
+### Criação
+
+São testados:
+
+- cliente inexistente;
+- criação bem-sucedida;
+- normalização;
+- conversão de campos opcionais vazios para `null`;
+- identificação obrigatória;
+- logradouro obrigatório;
+- número obrigatório;
+- bairro obrigatório;
+- cidade obrigatória;
+- repository não chamado em validações inválidas;
+- repository chamado uma vez no fluxo válido;
+- argumentos enviados à persistência.
+
+### Atualização
+
+São testados:
+
+- atualização bem-sucedida;
+- endereço não encontrado;
+- cliente não encontrado;
+- normalização;
+- campos opcionais vazios convertidos para `null`;
+- identificação obrigatória;
+- logradouro obrigatório;
+- número obrigatório;
+- bairro obrigatório;
+- cidade obrigatória;
+- repository não chamado quando o fluxo é inválido;
+- repository chamado uma vez no cenário válido;
+- IDs e argumentos enviados ao repository.
+
+### Exclusão
+
+São testados:
+
+- exclusão/inativação bem-sucedida;
+- endereço não encontrado;
+- cliente não encontrado;
+- repository não chamado quando o cliente não existe;
+- quantidade de chamadas;
+- `clienteId` enviado;
+- `enderecoId` enviado.
+
+### Reativação
+
+Os estados atuais de reativação de endereço são:
 
 ```text
-Estado
-→ o resultado retornado está correto?
+Reativado
+NaoEncontrado
+JaAtivo
 ```
 
-quanto:
+São testados:
 
-```text
-Interação
-→ a dependência foi chamada corretamente?
-```
+- reativação bem-sucedida;
+- endereço não encontrado;
+- endereço já ativo;
+- cliente não encontrado;
+- repository não chamado quando o cliente não existe;
+- quantidade de chamadas;
+- IDs enviados ao repository.
+
+Não existe atualmente um estado `Conflito` específico em `ResultadoReativacaoEndereco`.
 
 ---
 
 # Arquitetura atual
 
-A arquitetura atual continua propositalmente simples:
+A arquitetura continua propositalmente simples:
 
 ```text
 HTTP
@@ -888,7 +966,7 @@ Npgsql
 PostgreSQL
 ```
 
-Para clientes, após a introdução da primeira abstração:
+Para clientes:
 
 ```text
 ClienteEndpoints
@@ -904,6 +982,21 @@ NpgsqlDataSource
 PostgreSQL
 ```
 
+Para endereços:
+
+```text
+ClienteEnderecoEndpoints
+        ↓
+ClienteEnderecoService
+        ├── IClienteRepository
+        │       ↑
+        │  ClienteRepository
+        │
+        └── IClienteEnderecoRepository
+                ↑
+          ClienteEnderecoRepository
+```
+
 Nos testes:
 
 ```text
@@ -914,6 +1007,16 @@ ClienteService
 IClienteRepository
       ↑
 FakeClienteRepository
+```
+
+e:
+
+```text
+ClienteEnderecoServiceTests
+        ↓
+ClienteEnderecoService
+        ├── FakeClienteRepository
+        └── FakeClienteEnderecoRepository
 ```
 
 O projeto ainda não utiliza formalmente:
@@ -942,7 +1045,7 @@ Cliente
 └── Telefone
 ```
 
-O estado ativo/inativo atualmente faz parte da persistência e das regras de consulta, mas não compõe o record `Cliente` retornado pela aplicação.
+O estado ativo/inativo é armazenado no PostgreSQL para suportar o ciclo de vida e o soft delete, mas não faz parte do record `Cliente`.
 
 ## Endereço
 
@@ -978,21 +1081,118 @@ Entre as regras já implementadas estão:
 
 - clientes possuem identidade técnica própria;
 - telefone é normalizado antes da persistência;
-- telefone precisa ser único entre clientes ativos;
+- telefone deve ser único entre clientes ativos;
 - clientes podem ser inativados;
 - clientes podem ser reativados;
 - reativação pode gerar conflito de telefone;
 - clientes podem possuir múltiplos endereços;
 - endereços pertencem a um cliente específico;
-- endereços também possuem ciclo ativo/inativo;
+- endereços possuem ciclo ativo/inativo;
 - endereços inativos podem ser reativados;
-- recursos filhos não podem ser manipulados através de outro cliente.
+- recursos filhos não podem ser manipulados através de outro cliente;
+- dados obrigatórios são validados antes de chegar à persistência;
+- campos opcionais de endereço vazios são normalizados para `null`.
 
 ---
 
-# Fluxo de desenvolvimento atual
+# Estratégia atual de testes
 
-O desenvolvimento procura seguir este ciclo:
+Neste momento o projeto possui principalmente testes unitários dos services.
+
+Eles verificam:
+
+```text
+Estado
+→ o resultado retornado está correto?
+```
+
+e também:
+
+```text
+Interação
+→ a dependência foi chamada?
+→ quantas vezes?
+→ quais argumentos recebeu?
+```
+
+Exemplo:
+
+```text
+dados inválidos
+→ repository chamado 0 vezes
+
+dados válidos
+→ repository chamado 1 vez
+```
+
+Os testes atuais isolam os services utilizando fakes.
+
+Eles **não testam ainda**:
+
+```text
+Repository
+↓
+Npgsql
+↓
+SQL
+↓
+PostgreSQL
+```
+
+Portanto, uma falha real de SQL ou de integração com o banco poderia não ser detectada pelos testes unitários atuais.
+
+Essa limitação justifica a próxima etapa de estudo.
+
+---
+
+# Próxima etapa — Testes de integração
+
+O próximo problema a ser estudado é:
+
+> Como verificar automaticamente que os repositories realmente funcionam com PostgreSQL?
+
+A próxima evolução deverá testar algo semelhante a:
+
+```text
+ClienteRepository
+      ↓
+Npgsql
+      ↓
+PostgreSQL real
+```
+
+Essa etapa deverá introduzir gradualmente conceitos como:
+
+- teste unitário vs teste de integração;
+- banco de desenvolvimento vs banco de testes;
+- preparação de dados;
+- limpeza de dados;
+- isolamento entre testes;
+- repetibilidade;
+- lifecycle de infraestrutura de testes;
+- execução real de SQL.
+
+Ferramentas como **Testcontainers** poderão ser avaliadas posteriormente, somente depois que o problema que resolvem estiver claro.
+
+Após isso, uma etapa posterior poderá automatizar também o fluxo HTTP:
+
+```text
+HTTP
+ ↓
+Endpoint
+ ↓
+Service
+ ↓
+Repository
+ ↓
+PostgreSQL
+```
+
+---
+
+# Fluxo de desenvolvimento adotado
+
+O projeto procura seguir este ciclo:
 
 ```text
 Necessidade real
@@ -1003,32 +1203,42 @@ Problema aparece
       ↓
 Entendimento do problema
       ↓
-Introdução de conceito/padrão
+Introdução de conceito ou padrão
       ↓
-Teste
+Testes
       ↓
 Versionamento
 ```
 
-Um exemplo concreto já ocorrido:
+Um exemplo concreto:
 
 ```text
 ClienteService depende de ClienteRepository
       ↓
-difícil testar isoladamente
+service difícil de testar isoladamente
       ↓
 primeiro teste utiliza null!
       ↓
-problema fica evidente
+acoplamento fica evidente
       ↓
 IClienteRepository é introduzido
       ↓
 FakeClienteRepository é criado
       ↓
-service pode ser testado sem PostgreSQL
+service passa a ser testável sem PostgreSQL
 ```
 
-Esse processo representa a filosofia central do projeto.
+O mesmo processo ocorreu posteriormente com:
+
+```text
+ClienteEnderecoRepository
+↓
+IClienteEnderecoRepository
+↓
+FakeClienteEnderecoRepository
+```
+
+Essa evolução incremental representa a filosofia central do projeto.
 
 ---
 
@@ -1036,9 +1246,9 @@ Esse processo representa a filosofia central do projeto.
 
 Entre os assuntos planejados estão:
 
-- ampliar testes automatizados;
-- testes de `ClienteEnderecoService`;
 - testes de integração;
+- testes automatizados de HTTP/API;
+- melhorias graduais na infraestrutura de testes;
 - pedidos;
 - itens de pedido;
 - cardápios;
@@ -1072,17 +1282,17 @@ Entre os assuntos planejados estão:
 - arquitetura de software;
 - escalabilidade.
 
-Esses recursos não serão implementados simplesmente porque são comuns no mercado.
+Esses recursos não serão introduzidos simplesmente porque são comuns no mercado.
 
-Cada um deverá surgir a partir de uma necessidade concreta da aplicação.
+Cada conceito deverá surgir de uma necessidade concreta da aplicação.
 
 ---
 
 # Visão de domínio
 
-A Sabor Santè trabalha com uma operação que envolve muito mais do que um CRUD simples.
+A operação da Sabor Santè envolve mais do que um CRUD simples.
 
-O fluxo de longo prazo deve representar algo próximo de:
+A visão de longo prazo é representar algo próximo de:
 
 ```text
 Cliente
@@ -1139,4 +1349,4 @@ A intenção é transformar gradualmente este projeto de estudo em uma solução
 
 Caso a solução amadureça o suficiente, também poderá ser avaliada como base para atender outras empresas do segmento de alimentação saudável e produção de refeições.
 
-O objetivo técnico não é apenas chegar a uma aplicação funcional, mas compreender profundamente as decisões que levam um sistema simples a evoluir para uma aplicação backend profissional.
+O objetivo técnico não é apenas chegar a uma aplicação funcional, mas compreender profundamente as decisões que fazem um sistema simples evoluir para uma aplicação backend profissional.
