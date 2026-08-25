@@ -18,6 +18,10 @@ builder.Services.AddScoped<IClienteRepository>(
 builder.Services.AddScoped<ClienteService>();
 
 builder.Services.AddScoped<ClienteEnderecoRepository>();
+builder.Services.AddScoped<IClienteEnderecoRepository>(
+    serviceProvider =>
+        serviceProvider.GetRequiredService<ClienteEnderecoRepository>()
+);
 builder.Services.AddScoped<ClienteEnderecoService>();
 
 builder.Services.AddOpenApi();

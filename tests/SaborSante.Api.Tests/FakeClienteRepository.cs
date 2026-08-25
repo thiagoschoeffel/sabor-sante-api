@@ -26,15 +26,25 @@ public class FakeClienteRepository : IClienteRepository
 
     public int IdRecebidoReativar { get; private set; }
 
+    public Cliente? ClienteObtidoParaRetornar { get; set; }
+
     public ResultadoReativacaoCliente ResultadoReativacaoParaRetornar
     {
         get;
         set;
     } = ResultadoReativacaoCliente.Reativado;
 
+    public bool ResultadoExclusaoParaRetornar { get; set; } = true;
+
+    public int QuantidadeChamadasExcluirAsync { get; private set; }
+
+    public int IdRecebidoExcluir { get; private set; }
+
     public Task<Cliente?> ObterPorIdAsync(int id)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(
+            ClienteObtidoParaRetornar
+        );
     }
 
     public Task<Cliente?> CriarAsync(
@@ -64,6 +74,16 @@ public class FakeClienteRepository : IClienteRepository
 
         return Task.FromResult(
             ResultadoAtualizacaoParaRetornar
+        );
+    }
+
+    public Task<bool> ExcluirAsync(int id)
+    {
+        QuantidadeChamadasExcluirAsync++;
+        IdRecebidoExcluir = id;
+
+        return Task.FromResult(
+            ResultadoExclusaoParaRetornar
         );
     }
 

@@ -440,4 +440,49 @@ public class ClienteServiceTests
         Assert.False(resultado.Sucesso);
         Assert.Equal(TipoErro.Conflito, resultado.TipoErro);
     }
+
+    [Fact]
+    public async Task ExcluirAsync_deve_retornar_sucesso_quando_cliente_for_excluido()
+    {
+        var repository = new FakeClienteRepository
+        {
+            ResultadoExclusaoParaRetornar = true
+        };
+
+        var service = new ClienteService(repository);
+
+        var resultado = await service.ExcluirAsync(1);
+
+        Assert.True(resultado.Sucesso);
+        Assert.True(resultado.Valor);
+        Assert.Null(resultado.Erro);
+        Assert.Null(resultado.TipoErro);
+        Assert.Equal(
+            1,
+            repository.QuantidadeChamadasExcluirAsync
+        );
+
+        Assert.Equal(
+            1,
+            repository.IdRecebidoExcluir
+        );
+    }
+
+    [Fact]
+    public async Task ExcluirAsync_deve_retornar_false_quando_cliente_nao_for_excluido()
+    {
+        var repository = new FakeClienteRepository
+        {
+            ResultadoExclusaoParaRetornar = false
+        };
+
+        var service = new ClienteService(repository);
+
+        var resultado = await service.ExcluirAsync(999);
+
+        Assert.True(resultado.Sucesso);
+        Assert.False(resultado.Valor);
+        Assert.Null(resultado.Erro);
+        Assert.Null(resultado.TipoErro);
+    }
 }

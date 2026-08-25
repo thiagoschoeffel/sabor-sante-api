@@ -8,6 +8,7 @@ public enum ResultadoReativacaoEndereco
 }
 
 public class ClienteEnderecoRepository
+    : IClienteEnderecoRepository
 {
     private readonly NpgsqlDataSource _dataSource;
 

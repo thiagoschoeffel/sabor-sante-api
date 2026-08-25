@@ -1,11 +1,11 @@
 public class ClienteEnderecoService
 {
-    private readonly ClienteRepository _clienteRepository;
-    private readonly ClienteEnderecoRepository _enderecoRepository;
+    private readonly IClienteRepository _clienteRepository;
+    private readonly IClienteEnderecoRepository _enderecoRepository;
 
     public ClienteEnderecoService(
-        ClienteRepository clienteRepository,
-        ClienteEnderecoRepository enderecoRepository)
+        IClienteRepository clienteRepository,
+        IClienteEnderecoRepository enderecoRepository)
     {
         _clienteRepository = clienteRepository;
         _enderecoRepository = enderecoRepository;

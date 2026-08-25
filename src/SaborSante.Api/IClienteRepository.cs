@@ -13,6 +13,8 @@ public interface IClienteRepository
         string telefone
     );
 
+    Task<bool> ExcluirAsync(int id);
+
     Task<ResultadoReativacaoCliente> ReativarAsync(
         int id
     );

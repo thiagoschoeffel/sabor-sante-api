@@ -95,11 +95,12 @@ public static class ClienteEndpoints
             return Results.NoContent();
         });
 
-        app.MapDelete("/clientes/{id}", async (int id, ClienteRepository repository) =>
+        app.MapDelete("/clientes/{id}", async (int id, ClienteService service) =>
         {
-            var excluido = await repository.ExcluirAsync(id);
+            var resultado =
+                await service.ExcluirAsync(id);
 
-            if (!excluido)
+            if (!resultado.Valor)
             {
                 return Results.NotFound();
             }

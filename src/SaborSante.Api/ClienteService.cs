@@ -99,6 +99,19 @@ public class ClienteService
         return Resultado<bool>.Ok(true);
     }
 
+    public async Task<Resultado<bool>> ExcluirAsync(int id)
+    {
+        var excluido =
+            await _repository.ExcluirAsync(id);
+
+        if (!excluido)
+        {
+            return Resultado<bool>.Ok(false);
+        }
+
+        return Resultado<bool>.Ok(true);
+    }
+
     public async Task<Resultado<bool>> ReativarAsync(int id)
     {
         var resultado = await _repository.ReativarAsync(id);
