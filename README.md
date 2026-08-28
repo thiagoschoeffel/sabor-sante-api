@@ -1,66 +1,66 @@
 # Sabor Santè API
 
-API REST desenvolvida para apoiar a operação da **Sabor Santè**, uma empresa de alimentação saudável.
+REST API developed to support the operation of **Sabor Santè**, a healthy food company.
 
-O projeto também funciona como um estudo progressivo de desenvolvimento backend com **.NET 10**, **ASP.NET Core** e **PostgreSQL**.
+The project also serves as a progressive study of backend development with **.NET 10**, **ASP.NET Core** and **PostgreSQL**.
 
-A proposta é construir o sistema partindo de soluções simples e introduzir novos conceitos, padrões, abstrações e ferramentas somente quando problemas concretos justificarem sua utilização.
-
----
-
-## Objetivos
-
-O projeto possui dois objetivos complementares:
-
-1. aprofundar conhecimentos em desenvolvimento backend, bancos de dados, testes automatizados, arquitetura de software e sistemas distribuídos;
-2. evoluir gradualmente para uma solução capaz de apoiar a operação real da Sabor Santè.
-
-No longo prazo, a solução também poderá ser avaliada como base para outras empresas do segmento de alimentação saudável e produção de refeições.
+The proposal is to build the system starting from simple solutions and introducing new concepts, patterns, abstractions and tools only when concrete problems justify their use.
 
 ---
 
-# Filosofia de desenvolvimento
+## Objectives
 
-O projeto não começa com uma arquitetura complexa pronta.
+The project has two complementary objectives:
 
-A evolução segue um ciclo semelhante a:
+1. deepen knowledge in backend development, databases, automated testing, software architecture and distributed systems;
+2. gradually evolve into a solution capable of supporting the real operation of Sabor Santè.
+
+In the long term, the solution could also be evaluated as a foundation for other companies in the healthy food and meal production segment.
+
+---
+
+# Development Philosophy
+
+The project does not start with a complex ready-made architecture.
+
+The evolution follows a cycle similar to:
 
 ```text
-Necessidade real
-      ↓
-Implementação simples
-      ↓
-Problema aparece
-      ↓
-Entendimento do problema
-      ↓
-Introdução de conceito ou padrão
-      ↓
-Testes
-      ↓
-Refatoração
-      ↓
-Versionamento
+Real need
+    ↓
+Simple implementation
+    ↓
+Problem appears
+    ↓
+Problem understanding
+    ↓
+Introduction of concept or pattern
+    ↓
+Tests
+    ↓
+Refactoring
+    ↓
+Versioning
 ```
 
-Princípios adotados:
+Principles adopted:
 
-- começar com a solução mais simples possível;
-- evitar abstrações sem necessidade concreta;
-- compreender a tecnologia antes de adicionar ferramentas que escondam sua complexidade;
-- separar responsabilidades conforme o sistema cresce;
-- utilizar necessidades reais do negócio para orientar a modelagem;
-- preservar integridade e histórico dos dados;
-- utilizar o PostgreSQL também como mecanismo de garantia de integridade;
-- escrever testes automatizados para regras e integrações relevantes;
-- evoluir o sistema através de pequenos incrementos;
-- evitar padrões apenas porque são populares no mercado.
+- start with the simplest possible solution;
+- avoid abstractions without concrete necessity;
+- understand the technology before adding tools that hide its complexity;
+- separate responsibilities as the system grows;
+- use real business needs to guide modeling;
+- preserve data integrity and history;
+- use PostgreSQL also as a mechanism to guarantee integrity;
+- write automated tests for relevant rules and integrations;
+- evolve the system through small increments;
+- avoid patterns just because they are popular in the market.
 
 ---
 
-# Stack atual
+# Current Stack
 
-## Aplicação
+## Application
 
 - .NET 10
 - C#
@@ -69,19 +69,19 @@ Princípios adotados:
 - Npgsql
 - PostgreSQL
 
-## Infraestrutura
+## Infrastructure
 
 - Docker
 - Docker Compose
 
-## Testes
+## Testing
 
 - xUnit
 - Microsoft.AspNetCore.Mvc.Testing
 - `WebApplicationFactory`
-- PostgreSQL real para testes de integração
+- Real PostgreSQL for integration tests
 
-## Desenvolvimento
+## Development
 
 - Git
 - GitHub
@@ -90,7 +90,7 @@ Princípios adotados:
 
 ---
 
-# Estrutura atual
+# Current Structure
 
 ```text
 SaborSante/
@@ -142,7 +142,7 @@ SaborSante/
         └── SaborSante.Api.Tests.csproj
 ```
 
-A dependência entre os projetos segue apenas uma direção:
+The dependency between projects follows only one direction:
 
 ```text
 SaborSante.Api.Tests
@@ -150,13 +150,13 @@ SaborSante.Api.Tests
 SaborSante.Api
 ```
 
-O projeto de produção não depende do projeto de testes.
+The production project does not depend on the test project.
 
 ---
 
-# Arquitetura atual
+# Current Architecture
 
-A aplicação mantém uma arquitetura propositalmente simples:
+The application maintains a purposefully simple architecture:
 
 ```text
 HTTP
@@ -172,7 +172,7 @@ Npgsql
 PostgreSQL
 ```
 
-## Clientes
+## Clients
 
 ```text
 ClienteEndpoints
@@ -188,7 +188,7 @@ NpgsqlDataSource
 PostgreSQL
 ```
 
-## Endereços
+## Addresses
 
 ```text
 ClienteEnderecoEndpoints
@@ -205,19 +205,19 @@ ClienteEnderecoService
              PostgreSQL
 ```
 
-As interfaces não foram criadas antecipadamente.
+Interfaces were not created in advance.
 
-Elas surgiram quando os services precisaram ser testados isoladamente e a dependência direta dos repositories concretos começou a dificultar os testes.
+They emerged when the services needed to be tested in isolation and the direct dependency on concrete repositories began to hinder testing.
 
 ---
 
-# Evolução técnica do projeto
+# Technical Evolution of the Project
 
-## 1 — Fundamentos da API
+## 1 — API Foundations
 
-O projeto começou com ASP.NET Core e dados armazenados em memória.
+The project started with ASP.NET Core and data stored in memory.
 
-Foram estudados:
+Studied:
 
 - `Program.cs`;
 - top-level statements;
@@ -227,17 +227,17 @@ Foram estudados:
 - middleware;
 - Minimal APIs;
 - routing;
-- parâmetros de rota;
+- route parameters;
 - model binding;
 - lambdas;
 - records;
 - LINQ;
 - JSON;
 - REST;
-- códigos de status HTTP;
+- HTTP status codes;
 - CRUD.
 
-Primeiros endpoints:
+First endpoints:
 
 ```text
 GET    /health
@@ -250,11 +250,11 @@ DELETE /clientes/{id}
 
 ---
 
-## 2 — Persistência com PostgreSQL
+## 2 — Persistence with PostgreSQL
 
-O armazenamento em memória foi substituído por PostgreSQL executando em Docker.
+In-memory storage was replaced with PostgreSQL running in Docker.
 
-Foram estudados:
+Studied:
 
 - PostgreSQL;
 - Docker;
@@ -262,13 +262,13 @@ Foram estudados:
 - volumes;
 - connection strings;
 - Npgsql;
-- SQL manual;
-- SQL parametrizado;
+- manual SQL;
+- parameterized SQL;
 - SQL Injection;
-- identidade gerada pelo banco;
+- database-generated identity;
 - `INSERT ... RETURNING`;
-- leitura manual de resultados;
-- mapeamento SQL → C#;
+- manual result reading;
+- SQL → C# mapping;
 - `ExecuteScalarAsync`;
 - `ExecuteReaderAsync`;
 - `ExecuteNonQueryAsync`;
@@ -280,9 +280,9 @@ Foram estudados:
 
 ---
 
-## 3 — Separação de responsabilidades
+## 3 — Separation of Concerns
 
-Com o crescimento do `Program.cs`, a aplicação foi separada gradualmente em:
+As `Program.cs` grew, the application was gradually separated into:
 
 ```text
 Program
@@ -294,26 +294,26 @@ Services
 Repositories
 ```
 
-Foram estudados:
+Studied:
 
 - extension methods;
 - Dependency Injection;
-- dependências por construtor;
+- constructor dependencies;
 - Singleton;
 - Scoped;
 - Transient;
 - `NpgsqlDataSource`;
 - Repository;
 - Service;
-- separação entre HTTP, regras da aplicação e persistência.
+- separation between HTTP, application rules and persistence.
 
 ---
 
-## 4 — Validação e normalização
+## 4 — Validation and Normalization
 
-As primeiras regras de aplicação foram introduzidas no `ClienteService`.
+The first application rules were introduced in `ClienteService`.
 
-Modelo atual de cliente:
+Current client model:
 
 ```csharp
 public record Cliente(
@@ -337,48 +337,48 @@ public record AtualizarClienteRequest(
 );
 ```
 
-Regras atuais incluem:
+Current rules include:
 
-- nome obrigatório;
-- telefone obrigatório;
-- remoção de espaços desnecessários;
-- telefone armazenado somente com dígitos;
-- tratamento de valores `null`.
+- name required;
+- phone required;
+- removal of unnecessary spaces;
+- phone stored only with digits;
+- handling of `null` values.
 
-Exemplo:
+Example:
 
 ```text
-Entrada
+Input
 (47) 99999-9999
 
-↓ normalização
+↓ normalization
 
 47999999999
 ```
 
-Fluxo:
+Flow:
 
 ```text
-Entrada externa
+External input
       ↓
-Normalização
+Normalization
       ↓
-Validação
+Validation
       ↓
-Persistência
+Persistence
 ```
 
 ---
 
 ## 5 — Result Pattern
 
-Erros esperados da aplicação passaram a ser representados explicitamente através de:
+Expected application errors are now represented explicitly through:
 
 ```text
 Resultado<T>
 ```
 
-Tipos atuais de erro:
+Current error types:
 
 ```text
 Validacao
@@ -386,7 +386,7 @@ NaoEncontrado
 Conflito
 ```
 
-Tradução para HTTP:
+Translation to HTTP:
 
 ```text
 Validacao
@@ -399,48 +399,48 @@ Conflito
 → 409 Conflict
 ```
 
-Foram estudados:
+Studied:
 
 - generics;
-- records com comportamento;
+- records with behavior;
 - factory methods;
 - enums;
 - switch expressions;
-- erros esperados;
-- exceptions inesperadas;
-- separação entre resultado da aplicação e protocolo HTTP.
+- expected errors;
+- unexpected exceptions;
+- separation between application result and HTTP protocol.
 
 ---
 
-## 6 — Integridade e concorrência
+## 6 — Integrity and Concurrency
 
-A unicidade de telefone deixou de depender apenas da aplicação.
+Phone uniqueness no longer depends only on the application.
 
-A regra também passou a ser garantida pelo PostgreSQL.
+The rule also started to be guaranteed by PostgreSQL.
 
-Foram estudados:
+Studied:
 
 - constraints;
-- índices únicos;
+- unique indexes;
 - race conditions;
 - `PostgresException`;
 - SQLSTATE;
 - `23505 - unique_violation`;
-- tradução de erros de persistência.
+- translation of persistence errors.
 
 ---
 
-## 7 — Soft delete de clientes
+## 7 — Soft Delete of Clients
 
-Clientes passaram a ser inativados em vez de fisicamente removidos.
+Clients are now inactivated instead of physically removed.
 
-No PostgreSQL:
+In PostgreSQL:
 
 ```sql
 ativo BOOLEAN NOT NULL DEFAULT TRUE
 ```
 
-A exclusão lógica utiliza:
+Logical deletion uses:
 
 ```sql
 UPDATE clientes
@@ -449,25 +449,25 @@ WHERE id = @id
   AND ativo = TRUE;
 ```
 
-O campo `ativo` existe na persistência, mas não faz parte do record público `Cliente`.
+The `ativo` field exists in persistence, but is not part of the public `Cliente` record.
 
-Foram estudados:
+Studied:
 
 - soft delete;
-- preservação histórica;
-- ciclo de vida;
-- estado de negócio;
-- diferença entre `DELETE` HTTP e exclusão física.
+- historical preservation;
+- lifecycle;
+- business state;
+- difference between HTTP `DELETE` and physical deletion.
 
 ---
 
-## 8 — Unicidade parcial de telefone
+## 8 — Partial Phone Uniqueness
 
-A regra atual é:
+The current rule is:
 
-> O telefone deve ser único entre clientes ativos.
+> Phone must be unique among active clients.
 
-Implementação:
+Implementation:
 
 ```sql
 CREATE UNIQUE INDEX ux_clientes_telefone_ativo
@@ -475,25 +475,25 @@ ON clientes (telefone)
 WHERE ativo = TRUE;
 ```
 
-Assim:
+So:
 
 ```text
-cliente inativo com telefone X
+inactive client with phone X
 +
-novo cliente ativo com telefone X
-→ permitido
+new active client with phone X
+→ allowed
 ```
 
-mas:
+but:
 
 ```text
-dois clientes ativos com telefone X
-→ conflito
+two active clients with phone X
+→ conflict
 ```
 
 ---
 
-## 9 — Reativação de clientes
+## 9 — Client Reactivation
 
 Endpoint:
 
@@ -501,7 +501,7 @@ Endpoint:
 PATCH /clientes/{id}/reativar
 ```
 
-Estados tratados:
+States handled:
 
 ```text
 Reativado
@@ -510,27 +510,27 @@ JaAtivo
 Conflito
 ```
 
-Possíveis respostas:
+Possible responses:
 
 ```text
-cliente reativado
+client reactivated
 → 204 No Content
 
-cliente inexistente
+client not found
 → 404 Not Found
 
-cliente já ativo
+client already active
 → 409 Conflict
 
-telefone utilizado por outro cliente ativo
+phone used by another active client
 → 409 Conflict
 ```
 
 ---
 
-## 10 — Versionamento do banco
+## 10 — Database Versioning
 
-A estrutura do PostgreSQL passou a ser representada por scripts SQL versionados no Git:
+PostgreSQL structure is now represented by versioned SQL scripts in Git:
 
 ```text
 database/
@@ -538,36 +538,36 @@ database/
 └── 002_create_clientes_enderecos.sql
 ```
 
-Ainda não existe uma ferramenta automatizada de migrations.
+There is still no automated migrations tool.
 
-A intenção é compreender primeiro o problema antes de introduzir uma ferramenta para resolvê-lo.
+The intention is to understand the problem first before introducing a tool to solve it.
 
 ---
 
-# Endereços de clientes
+# Client Addresses
 
-## Relacionamento
+## Relationship
 
-Foi introduzido o primeiro relacionamento real do domínio:
+The first real domain relationship was introduced:
 
 ```text
-Cliente
+Client
 1 ───────── N
-          Endereços
+        Addresses
 ```
 
-Exemplo:
+Example:
 
 ```text
-Cliente
-├── Casa
-├── Trabalho
-└── Outro
+Client
+├── Home
+├── Work
+└── Other
 ```
 
-Isso representa uma necessidade real da operação: o mesmo cliente pode receber pedidos em endereços diferentes.
+This represents a real operational need: the same client can receive orders at different addresses.
 
-No banco:
+In the database:
 
 ```text
 clientes.id
@@ -579,7 +579,7 @@ clientes_enderecos.cliente_id
 
 ---
 
-## Modelo de endereço
+## Address Model
 
 ```text
 ClienteEndereco
@@ -595,20 +595,20 @@ ClienteEndereco
 └── Ativo
 ```
 
-Foram estudados:
+Studied:
 
-- relacionamento um-para-muitos;
+- one-to-many relationship;
 - foreign keys;
-- integridade referencial;
-- recursos pai e filho;
-- rotas aninhadas;
+- referential integrity;
+- parent and child resources;
+- nested routes;
 - `DBNull.Value`;
 - `reader.IsDBNull`;
 - ownership.
 
 ---
 
-## Endpoints de endereço
+## Address Endpoints
 
 ```text
 GET    /clientes/{clienteId}/enderecos
@@ -623,20 +623,20 @@ DELETE /clientes/{clienteId}/enderecos/{enderecoId}
 PATCH  /clientes/{clienteId}/enderecos/{enderecoId}/reativar
 ```
 
-Regras:
+Rules:
 
-- cliente precisa existir;
-- endereço precisa pertencer ao cliente informado;
-- endereços possuem soft delete;
-- endereços inativos não aparecem nas consultas normais;
-- endereços podem ser reativados;
-- campos obrigatórios são validados;
-- campos opcionais vazios são normalizados para `null`.
+- client must exist;
+- address must belong to the informed client;
+- addresses have soft delete;
+- inactive addresses do not appear in normal queries;
+- addresses can be reactivated;
+- required fields are validated;
+- empty optional fields are normalized to `null`.
 
-Exemplo de ownership:
+Example of ownership:
 
 ```text
-endereço 10 pertence ao cliente 2
+address 10 belongs to client 2
 
 GET /clientes/2/enderecos/10
 → 200 OK
@@ -647,14 +647,14 @@ GET /clientes/3/enderecos/10
 
 ---
 
-# Testes automatizados
+# Automated Tests
 
-A estratégia atual possui três níveis principais.
+The current strategy has three main levels.
 
 ```text
                  HTTP
                   │
-           Testes da API
+           API Tests
                   │
                   ▼
               Endpoints
@@ -673,13 +673,13 @@ A estratégia atual possui três níveis principais.
                  PostgreSQL
 ```
 
-Cada nível responde a perguntas diferentes.
+Each level answers different questions.
 
 ---
 
-# Testes unitários
+# Unit Tests
 
-Os services são testados isoladamente utilizando fakes manuais.
+Services are tested in isolation using manual fakes.
 
 ## ClienteService
 
@@ -699,118 +699,118 @@ ClienteEnderecoService
         └── FakeClienteEnderecoRepository
 ```
 
-Os fakes permitem:
+The fakes allow:
 
-- configurar resultados;
-- simular recursos existentes e inexistentes;
-- capturar argumentos;
-- contar chamadas;
-- verificar se uma dependência foi utilizada;
-- executar testes sem PostgreSQL.
+- configure results;
+- simulate existing and non-existing resources;
+- capture arguments;
+- count calls;
+- verify if a dependency was used;
+- run tests without PostgreSQL.
 
-Foram estudados:
+Studied:
 
 - xUnit;
 - `[Fact]`;
 - Arrange / Act / Assert;
 - test doubles;
-- fake manual;
+- manual fake;
 - `Task.FromResult`;
 - object initializer;
-- verificação de estado;
-- verificação de interação;
-- argumentos enviados;
-- quantidade de chamadas.
+- state verification;
+- interaction verification;
+- sent arguments;
+- number of calls.
 
 ---
 
-## Cobertura do ClienteService
+## ClienteService Coverage
 
-### Criação
+### Creation
 
-Testes para:
+Tests for:
 
-- nome obrigatório;
-- telefone obrigatório;
-- valores `null`;
-- telefone sem dígitos;
-- normalização;
-- sucesso;
-- conflito;
-- repository não chamado em validações inválidas;
-- argumentos enviados ao repository.
+- name required;
+- phone required;
+- `null` values;
+- phone without digits;
+- normalization;
+- success;
+- conflict;
+- repository not called on invalid validations;
+- arguments sent to repository.
 
-### Atualização
+### Update
 
-Testes para:
+Tests for:
 
-- sucesso;
-- cliente inexistente;
-- conflito;
-- normalização;
-- validação;
-- chamadas ao repository.
+- success;
+- client not found;
+- conflict;
+- normalization;
+- validation;
+- repository calls.
 
-### Exclusão
+### Deletion
 
-Testes para:
+Tests for:
 
-- sucesso;
-- cliente não excluído;
-- ID enviado;
-- quantidade de chamadas.
+- success;
+- client not deleted;
+- ID sent;
+- number of calls.
 
-### Reativação
+### Reactivation
 
-Testes para:
+Tests for:
 
-- reativado;
-- não encontrado;
-- já ativo;
-- conflito;
-- ID enviado;
-- quantidade de chamadas.
+- reactivated;
+- not found;
+- already active;
+- conflict;
+- ID sent;
+- number of calls.
 
 ---
 
-## Cobertura do ClienteEnderecoService
+## ClienteEnderecoService Coverage
 
-### Criação
+### Creation
 
-Testes para:
+Tests for:
 
-- cliente inexistente;
-- sucesso;
-- normalização;
-- campos opcionais;
-- validação dos campos obrigatórios;
-- repository não chamado em cenários inválidos.
+- client not found;
+- success;
+- normalization;
+- optional fields;
+- validation of required fields;
+- repository not called in invalid scenarios.
 
-### Atualização
+### Update
 
-Testes para:
+Tests for:
 
-- sucesso;
-- endereço inexistente;
-- cliente inexistente;
-- normalização;
-- campos opcionais;
-- validação;
-- argumentos enviados.
+- success;
+- address not found;
+- client not found;
+- normalization;
+- optional fields;
+- validation;
+- arguments sent.
 
-### Exclusão
+### Deletion
 
-Testes para:
+Tests for:
 
-- sucesso;
-- endereço inexistente;
-- cliente inexistente;
-- IDs enviados;
-- chamadas ao repository.
+- success;
+- address not found;
+- client not found;
+- IDs sent;
+- repository calls.
 
-### Reativação
+### Reactivation
 
-Estados atuais:
+Current states:
 
 ```text
 Reativado
@@ -818,22 +818,22 @@ NaoEncontrado
 JaAtivo
 ```
 
-Testes para:
+Tests for:
 
-- sucesso;
-- endereço inexistente;
-- endereço já ativo;
-- cliente inexistente;
-- IDs enviados;
-- quantidade de chamadas.
+- success;
+- address not found;
+- address already active;
+- client not found;
+- IDs sent;
+- number of calls.
 
 ---
 
-# Interfaces e inversão de dependência
+# Interfaces and Dependency Inversion
 
-As interfaces surgiram durante os testes.
+Interfaces emerged during testing.
 
-Inicialmente:
+Initially:
 
 ```text
 ClienteService
@@ -841,9 +841,9 @@ ClienteService
 ClienteRepository
 ```
 
-Ao tentar isolar o service, a dependência concreta dificultou o teste.
+When trying to isolate the service, the concrete dependency made testing difficult.
 
-A estrutura evoluiu para:
+The structure evolved to:
 
 ```text
 ClienteService
@@ -853,7 +853,7 @@ IClienteRepository
 ClienteRepository
 ```
 
-e:
+and:
 
 ```text
 ClienteEnderecoService
@@ -863,22 +863,22 @@ IClienteEnderecoRepository
 ClienteEnderecoRepository
 ```
 
-Isso introduziu na prática:
+This introduced in practice:
 
-- abstrações;
-- contratos;
-- substituição de implementações;
-- redução de acoplamento;
-- Dependency Injection através de interfaces;
-- inversão de dependência.
+- abstractions;
+- contracts;
+- replacement of implementations;
+- reduced coupling;
+- Dependency Injection through interfaces;
+- dependency inversion.
 
-A abstração não foi criada antecipadamente: surgiu a partir de um problema real de testabilidade.
+The abstraction was not created in advance: it emerged from a real testability problem.
 
 ---
 
-# Testes de integração com PostgreSQL
+# Integration Tests with PostgreSQL
 
-Os testes unitários conseguem provar regras dos services, mas não conseguem provar que isto funciona:
+Unit tests can prove service rules, but cannot prove that this works:
 
 ```text
 Repository
@@ -890,35 +890,35 @@ SQL
 PostgreSQL
 ```
 
-Por exemplo, um fake não descobriria necessariamente:
+For example, a fake would not necessarily discover:
 
-- nome de tabela errado;
-- coluna errada;
-- SQL inválido;
-- erro no `RETURNING`;
-- tipo PostgreSQL incompatível;
-- foreign key incorreta;
-- índice inexistente.
+- wrong table name;
+- wrong column;
+- invalid SQL;
+- error in `RETURNING`;
+- incompatible PostgreSQL type;
+- incorrect foreign key;
+- missing index.
 
-Foi criado um banco separado:
+A separate database was created:
 
 ```text
 saborsante_tests
 ```
 
-O banco de desenvolvimento continua sendo:
+The development database remains:
 
 ```text
 saborsante
 ```
 
-Assim:
+So:
 
 ```text
-Desenvolvimento
+Development
 → saborsante
 
-Testes
+Tests
 → saborsante_tests
 ```
 
@@ -926,38 +926,38 @@ Testes
 
 ## PostgresFixture
 
-A infraestrutura PostgreSQL utilizada pelos testes foi centralizada em:
+The PostgreSQL infrastructure used by tests was centralized in:
 
 ```text
 PostgresFixture
 ```
 
-Ela é responsável por:
+It is responsible for:
 
-- carregar a configuração dos testes;
-- criar o `NpgsqlDataSource`;
-- compartilhar o datasource;
-- descartar o recurso no final;
-- disponibilizar repositories;
-- limpar o banco entre testes.
+- loading test configuration;
+- creating the `NpgsqlDataSource`;
+- sharing the datasource;
+- disposing the resource at the end;
+- providing repositories;
+- cleaning the database between tests.
 
-Foram estudados:
+Studied:
 
 - `IClassFixture`;
 - `IAsyncLifetime`;
-- ciclo de vida de recursos de teste;
-- compartilhamento de infraestrutura;
-- preparação e limpeza de dados.
+- lifecycle of test resources;
+- sharing infrastructure;
+- data preparation and cleanup.
 
 ---
 
-## Limpeza e isolamento
+## Cleanup and Isolation
 
-Inicialmente cada teste possuía um `finally` que apagava manualmente os dados criados.
+Initially each test had a `finally` that manually deleted the created data.
 
-Isso gerou muita repetição.
+This generated a lot of repetition.
 
-A estratégia evoluiu para uma limpeza centralizada:
+The strategy evolved to centralized cleanup:
 
 ```text
 LimparBancoAsync()
@@ -967,75 +967,75 @@ DELETE clientes_enderecos
 DELETE clientes
 ```
 
-Cada teste começa com um estado conhecido.
+Each test starts with a known state.
 
 ---
 
-## Concorrência entre testes
+## Concurrency Between Tests
 
-Ao executar classes diferentes de integração simultaneamente, apareceu uma race condition.
+When running different integration test classes simultaneously, a race condition appeared.
 
-Exemplo:
+Example:
 
 ```text
-Teste A
+Test A
 ↓
-cria cliente
+creates client
 
-              Teste B
+              Test B
               ↓
-              limpa banco
+              cleans database
 
-Teste A continua
+Test A continues
 ↓
-cliente desapareceu
+client disappeared
 ```
 
-Também ocorreram conflitos com foreign keys durante limpezas concorrentes.
+Conflicts with foreign keys also occurred during concurrent cleanups.
 
-O problema apareceu porque várias classes utilizavam o mesmo banco mutável:
+The problem appeared because multiple classes used the same mutable database:
 
 ```text
 saborsante_tests
 ```
 
-A solução foi agrupar esses testes em uma collection do xUnit:
+The solution was to group these tests in an xUnit collection:
 
 ```text
 Postgres Integration
 ```
 
-com paralelização desabilitada.
+with parallelization disabled.
 
-Assim:
-
-```text
-Teste A
-↓
-termina
-
-Teste B
-↓
-termina
-
-Teste C
-↓
-termina
-```
-
-em vez de:
+So:
 
 ```text
-Teste A ────────┐
-                ├── mesmo banco
-Teste B ────────┘
+Test A
+↓
+finishes
+
+Test B
+↓
+finishes
+
+Test C
+↓
+finishes
 ```
 
-Conceitos estudados:
+instead of:
 
-- isolamento;
-- estado compartilhado;
-- concorrência;
+```text
+Test A ────────┐
+                ├── same database
+Test B ────────┘
+```
+
+Concepts studied:
+
+- isolation;
+- shared state;
+- concurrency;
 - race conditions;
 - foreign key violations;
 - xUnit collections;
@@ -1043,28 +1043,28 @@ Conceitos estudados:
 
 ---
 
-# Testes de integração dos repositories
+# Repository Integration Tests
 
 ## ClienteRepository
 
-São testados contra PostgreSQL real:
+Tested against real PostgreSQL:
 
 - `CriarAsync`;
-- criação com telefone duplicado;
+- creation with duplicate phone;
 - `ObterPorIdAsync`;
-- cliente inexistente;
+- non-existent client;
 - `AtualizarAsync`;
-- cliente inexistente;
-- conflito de telefone;
+- non-existent client;
+- phone conflict;
 - `ExcluirAsync`;
 - soft delete;
-- exclusão inexistente;
+- non-existent deletion;
 - `ReativarAsync`;
-- não encontrado;
-- já ativo;
-- conflito de telefone.
+- not found;
+- already active;
+- phone conflict.
 
-Esses testes exercitam realmente:
+These tests really exercise:
 
 ```text
 C#
@@ -1084,38 +1084,38 @@ PostgreSQL
 
 ## ClienteEnderecoRepository
 
-São testados:
+Tested:
 
-- criação;
-- leitura por ID;
-- listagem;
-- atualização;
-- exclusão;
-- reativação;
+- creation;
+- read by ID;
+- listing;
+- update;
+- deletion;
+- reactivation;
 - soft delete;
-- registros inativos;
-- endereço inexistente;
+- inactive records;
+- non-existent address;
 - ownership;
-- relacionamento com cliente;
+- relationship with client;
 - foreign key.
 
-Exemplo:
+Example:
 
 ```text
-cliente 1 possui endereço 10
+client 1 owns address 10
 
-cliente 2 tenta atualizar endereço 10
+client 2 tries to update address 10
 ↓
 false
 ```
 
-Assim a regra de ownership também é verificada diretamente na persistência.
+So the ownership rule is also verified directly in persistence.
 
 ---
 
-# Testes automatizados da API HTTP
+# Automated HTTP API Tests
 
-Depois dos testes unitários e dos testes dos repositories ainda existia uma lacuna:
+After unit tests and repository tests there was still a gap:
 
 ```text
 HTTP
@@ -1127,21 +1127,21 @@ Service
 Repository
 ```
 
-Era necessário testar a aplicação a partir da sua fronteira externa.
+It was necessary to test the application from its external boundary.
 
-Foi introduzido:
+Introduced:
 
 ```text
 Microsoft.AspNetCore.Mvc.Testing
 ```
 
-e:
+and:
 
 ```text
 WebApplicationFactory<Program>
 ```
 
-Agora os testes conseguem executar:
+Now tests can execute:
 
 ```text
 HttpClient
@@ -1162,31 +1162,31 @@ Npgsql
 ↓
 PostgreSQL
 ↓
-Resposta HTTP
+HTTP Response
 ```
 
-sem precisar iniciar manualmente a aplicação ou utilizar o Insomnia.
+without needing to manually start the application or use Insomnia.
 
 ---
 
 # HealthEndpointTests
 
-O primeiro teste HTTP automatizado foi:
+The first automated HTTP test was:
 
 ```text
 GET /health
 ```
 
-Ele verifica:
+It verifies:
 
-- aplicação inicializa;
-- rota existe;
-- resposta é exatamente `200 OK`;
-- resposta é JSON;
-- propriedade `status`;
-- valor `"ok"`.
+- application initializes;
+- route exists;
+- response is exactly `200 OK`;
+- response is JSON;
+- `status` property;
+- value `"ok"`.
 
-Foram utilizados:
+Used:
 
 - `HttpClient`;
 - `HttpStatusCode`;
@@ -1197,65 +1197,65 @@ Foram utilizados:
 
 # ApiWebApplicationFactory
 
-Foi criada:
+Created:
 
 ```text
 ApiWebApplicationFactory
 ```
 
-derivando de:
+deriving from:
 
 ```csharp
 WebApplicationFactory<Program>
 ```
 
-Ela representa a aplicação utilizada pelos testes HTTP.
+It represents the application used by HTTP tests.
 
-Durante sua implementação surgiu um problema importante.
+An important problem emerged during its implementation.
 
-Apenas adicionar:
+Simply adding:
 
 ```text
 appsettings.IntegrationTests.json
 ```
 
-à configuração não foi suficiente para fazer a aplicação utilizar `saborsante_tests`.
+to the configuration was not enough to make the application use `saborsante_tests`.
 
-A aplicação ainda possuía o `NpgsqlDataSource` configurado pelo `Program.cs`.
+The application still had the `NpgsqlDataSource` configured by `Program.cs`.
 
-O problema ficou evidente quando:
+The problem became clear when:
 
 ```text
 PostgresFixture
-→ limpava saborsante_tests
+→ cleaned saborsante_tests
 
 API
-→ utilizava saborsante
+→ used saborsante
 ```
 
-Um teste que deveria retornar:
+A test that should return:
 
 ```text
 201 Created
 ```
 
-retornou:
+returned:
 
 ```text
 409 Conflict
 ```
 
-porque o telefone já existia no banco de desenvolvimento.
+because the phone already existed in the development database.
 
-A correção foi substituir explicitamente a dependência no container de testes:
+The fix was to explicitly replace the dependency in the test container:
 
 ```text
 RemoveAll<NpgsqlDataSource>
 ↓
-registrar NpgsqlDataSource de saborsante_tests
+register NpgsqlDataSource from saborsante_tests
 ```
 
-A estrutura passou a ser:
+The structure became:
 
 ```text
 PostgresFixture
@@ -1265,23 +1265,23 @@ saborsante_tests
 ApiWebApplicationFactory
 ```
 
-Foram estudados:
+Studied:
 
 - `WebApplicationFactory`;
-- host de testes ASP.NET Core;
-- configuração de aplicação em testes;
+- ASP.NET Core test host;
+- application configuration in tests;
 - `ConfigureTestServices`;
-- substituição de dependências;
+- dependency replacement;
 - `RemoveAll<T>`;
-- diferença entre configuração e instância já registrada no DI.
+- difference between configuration and instance already registered in DI.
 
 ---
 
-# Testes HTTP de clientes
+# HTTP Client Tests
 
 ## POST /clientes
 
-São verificados:
+Verified:
 
 ```text
 201 Created
@@ -1289,64 +1289,64 @@ São verificados:
 409 Conflict
 ```
 
-Além disso:
+Also:
 
-- JSON retornado;
-- ID gerado;
-- nome;
-- normalização do telefone;
-- conflito de unicidade.
+- returned JSON;
+- generated ID;
+- name;
+- phone normalization;
+- uniqueness conflict.
 
 ---
 
 ## GET /clientes/{id}
 
-São verificados:
+Verified:
 
 ```text
-cliente existente
+existing client
 → 200 OK
 
-cliente inexistente
+non-existent client
 → 404 Not Found
 ```
 
-A resposta JSON também é desserializada e comparada.
+The JSON response is also deserialized and compared.
 
 ---
 
 ## PUT /clientes/{id}
 
-São verificados:
+Verified:
 
-- atualização válida;
+- valid update;
 - `204 No Content`;
-- persistência confirmada através de `GET`;
-- cliente inexistente;
+- persistence confirmed through `GET`;
+- non-existent client;
 - `404 Not Found`;
-- conflito de telefone;
+- phone conflict;
 - `409 Conflict`.
 
 ---
 
 ## DELETE /clientes/{id}
 
-São verificados:
+Verified:
 
 ```text
-cliente existente
+existing client
 → 204 No Content
 
-GET posterior
+subsequent GET
 → 404 Not Found
 ```
 
-confirmando o soft delete.
+confirming soft delete.
 
-Também é testado:
+Also tested:
 
 ```text
-cliente inexistente
+non-existent client
 → 404 Not Found
 ```
 
@@ -1354,23 +1354,23 @@ cliente inexistente
 
 ## PATCH /clientes/{id}/reativar
 
-São testados:
+Tested:
 
 ```text
-cliente inativo
+inactive client
 → 204 No Content
 
-cliente inexistente
+non-existent client
 → 404 Not Found
 
-cliente já ativo
+already active client
 → 409 Conflict
 
-telefone utilizado por outro cliente ativo
+phone used by another active client
 → 409 Conflict
 ```
 
-O cenário de conflito atravessa toda a pilha:
+The conflict scenario traverses the entire stack:
 
 ```text
 HTTP
@@ -1388,36 +1388,36 @@ unique_violation
 
 ---
 
-# Testes HTTP de endereços
+# HTTP Address Tests
 
 ## POST /clientes/{clienteId}/enderecos
 
-São testados:
+Tested:
 
-- criação válida;
+- valid creation;
 - `201 Created`;
-- JSON retornado;
-- `clienteId` correto;
-- campos do endereço;
-- cliente inexistente;
+- returned JSON;
+- correct `clienteId`;
+- address fields;
+- non-existent client;
 - `404 Not Found`;
-- dados inválidos;
+- invalid data;
 - `400 Bad Request`.
 
 ---
 
 ## GET /clientes/{clienteId}/enderecos/{enderecoId}
 
-São testados:
+Tested:
 
 ```text
-endereço existente
+existing address
 → 200 OK
 
-endereço inexistente
+non-existent address
 → 404 Not Found
 
-endereço pertence a outro cliente
+address belongs to another client
 → 404 Not Found
 ```
 
@@ -1425,17 +1425,17 @@ endereço pertence a outro cliente
 
 ## GET /clientes/{clienteId}/enderecos
 
-A listagem verifica que apenas endereços pertencentes ao cliente informado são retornados.
+The listing verifies that only addresses belonging to the informed client are returned.
 
-Exemplo:
+Example:
 
 ```text
-cliente 1
-├── endereço A
-└── endereço B
+client 1
+├── address A
+└── address B
 
-cliente 2
-└── endereço C
+client 2
+└── address C
 
 GET /clientes/1/enderecos
 → A + B
@@ -1445,55 +1445,55 @@ GET /clientes/1/enderecos
 
 ## PUT /clientes/{clienteId}/enderecos/{enderecoId}
 
-São testados:
+Tested:
 
-- atualização válida;
+- valid update;
 - `204 No Content`;
-- persistência confirmada por `GET`;
-- endereço inexistente;
-- ownership incorreto;
+- persistence confirmed by `GET`;
+- non-existent address;
+- incorrect ownership;
 - `404 Not Found`.
 
 ---
 
 ## DELETE /clientes/{clienteId}/enderecos/{enderecoId}
 
-São testados:
+Tested:
 
 - soft delete;
 - `204 No Content`;
-- endereço deixa de ser encontrado;
-- endereço inexistente;
-- endereço de outro cliente;
+- address no longer found;
+- non-existent address;
+- address of another client;
 - `404 Not Found`.
 
 ---
 
 ## PATCH /clientes/{clienteId}/enderecos/{enderecoId}/reativar
 
-São testados:
+Tested:
 
 ```text
-endereço inativo
+inactive address
 → 204 No Content
 
-endereço já ativo
+already active address
 → 409 Conflict
 
-endereço inexistente
+non-existent address
 → 404 Not Found
 
-cliente inexistente
+non-existent client
 → 404 Not Found
 ```
 
 ---
 
-# Pirâmide atual de testes
+# Current Test Pyramid
 
-Neste momento o projeto possui três níveis complementares.
+At this point the project has three complementary levels.
 
-## Unitário
+## Unit
 
 ```text
 Service
@@ -1501,19 +1501,19 @@ Service
 Fake
 ```
 
-Objetivo:
+Goal:
 
-> verificar regras isoladamente.
+> verify rules in isolation.
 
-Vantagens:
+Advantages:
 
-- rápidos;
-- determinísticos;
-- sem infraestrutura externa.
+- fast;
+- deterministic;
+- no external infrastructure.
 
 ---
 
-## Integração de persistência
+## Persistence Integration
 
 ```text
 Repository
@@ -1523,13 +1523,13 @@ Npgsql
 PostgreSQL
 ```
 
-Objetivo:
+Goal:
 
-> verificar SQL, constraints, relacionamentos e persistência real.
+> verify SQL, constraints, relationships and real persistence.
 
 ---
 
-## Integração HTTP
+## HTTP Integration
 
 ```text
 HttpClient
@@ -1545,41 +1545,41 @@ Repository
 PostgreSQL
 ```
 
-Objetivo:
+Goal:
 
-> verificar a aplicação integrada a partir da fronteira HTTP.
+> verify the integrated application from the HTTP boundary.
 
-Os níveis não se substituem.
+The levels do not replace each other.
 
-Um teste HTTP não precisa reproduzir todos os casos já cobertos pelos testes unitários, e um teste unitário não consegue garantir que SQL e PostgreSQL estejam corretos.
+An HTTP test does not need to reproduce all cases already covered by unit tests, and a unit test cannot guarantee that SQL and PostgreSQL are correct.
 
 ---
 
-# Conceitos de testes estudados até agora
+# Concepts of Testing Studied So Far
 
 - xUnit;
 - `[Fact]`;
 - Arrange / Act / Assert;
 - unit tests;
 - integration tests;
-- testes HTTP;
+- HTTP tests;
 - test doubles;
 - fakes;
-- estado configurável;
-- interação;
-- captura de argumentos;
-- quantidade de chamadas;
+- configurable state;
+- interaction;
+- argument capture;
+- number of calls;
 - `Task.FromResult`;
 - fixtures;
 - `IClassFixture`;
 - `IAsyncLifetime`;
-- collections do xUnit;
-- paralelização;
+- xUnit collections;
+- parallelization;
 - race conditions;
-- isolamento de testes;
-- estado compartilhado;
-- banco exclusivo para testes;
-- preparação e limpeza de dados;
+- test isolation;
+- shared state;
+- exclusive test database;
+- data preparation and cleanup;
 - `WebApplicationFactory`;
 - `HttpClient`;
 - `PostAsJsonAsync`;
@@ -1589,15 +1589,15 @@ Um teste HTTP não precisa reproduzir todos os casos já cobertos pelos testes u
 - `HttpRequestMessage`;
 - `HttpMethod.Patch`;
 - `ReadFromJsonAsync`;
-- status HTTP;
-- contrato JSON;
-- substituição de dependências no DI.
+- HTTP status;
+- JSON contract;
+- dependency replacement in DI.
 
-Nenhuma biblioteca externa de mocks foi necessária até o momento.
+No external mocking library has been necessary so far.
 
 ---
 
-# Modelo de domínio atual
+# Current Domain Model
 
 ```text
 Cliente
@@ -1605,52 +1605,52 @@ Cliente
    └── Endereços
 ```
 
-Ainda é um domínio pequeno, mas já possui:
+Still a small domain, but already has:
 
-- identidade;
-- estado ativo/inativo;
-- ciclo de vida;
-- regras de unicidade;
-- relacionamento;
+- identity;
+- active/inactive state;
+- lifecycle;
+- uniqueness rules;
+- relationship;
 - ownership;
-- histórico preservado por soft delete;
-- integridade referencial.
+- history preserved by soft delete;
+- referential integrity.
 
 ---
 
-# Regras atuais
+# Current Rules
 
-## Cliente
+## Client
 
-- nome obrigatório;
-- telefone obrigatório;
-- telefone normalizado;
-- telefone único entre clientes ativos;
-- cliente pode ser inativado;
-- cliente pode ser reativado;
-- reativação pode gerar conflito de telefone.
+- name required;
+- phone required;
+- phone normalized;
+- phone unique among active clients;
+- client can be inactivated;
+- client can be reactivated;
+- reactivation may cause phone conflict.
 
-## Endereço
+## Address
 
-- pertence a exatamente um cliente;
-- cliente precisa existir;
-- identificação obrigatória;
-- logradouro obrigatório;
-- número obrigatório;
-- bairro obrigatório;
-- cidade obrigatória;
-- complemento opcional;
-- CEP opcional;
-- campos opcionais vazios são convertidos para `null`;
-- endereço possui soft delete;
-- endereço pode ser reativado;
-- endereço de um cliente não pode ser manipulado através de outro cliente.
+- belongs to exactly one client;
+- client must exist;
+- identification required;
+- street required;
+- number required;
+- neighborhood required;
+- city required;
+- complement optional;
+- postal code optional;
+- empty optional fields are converted to `null`;
+- address has soft delete;
+- address can be reactivated;
+- client address cannot be manipulated through another client.
 
 ---
 
-# O que ainda não foi introduzido
+# What Has Not Yet Been Introduced
 
-O projeto ainda não utiliza formalmente:
+The project still does not formally use:
 
 - Clean Architecture;
 - DDD;
@@ -1658,23 +1658,23 @@ O projeto ainda não utiliza formalmente:
 - MediatR;
 - microservices;
 - Event Sourcing;
-- mensageria;
+- messaging;
 - Entity Framework Core;
-- biblioteca de mocks;
+- mocking library;
 - Testcontainers;
-- migrations automatizadas;
-- autenticação;
-- autorização.
+- automated migrations;
+- authentication;
+- authorization.
 
-Isso é intencional.
+This is intentional.
 
-Esses conceitos serão avaliados quando existirem problemas concretos que possam justificar sua utilização.
+These concepts will be evaluated when concrete problems justify their use.
 
 ---
 
-# Próxima etapa — Pedidos
+# Next Step — Orders
 
-A infraestrutura básica da API já possui:
+The basic API infrastructure already has:
 
 ```text
 HTTP
@@ -1689,25 +1689,25 @@ Repositories
 PostgreSQL
 ✓
 
-Testes unitários
+Unit tests
 ✓
 
-Testes de integração
+Integration tests
 ✓
 
-Testes HTTP
+HTTP tests
 ✓
 ```
 
-O próximo foco volta ao domínio da Sabor Santè.
+The next focus returns to Sabor Santè domain.
 
-A próxima área será:
+The next area will be:
 
 ```text
-Pedido
+Order
 ```
 
-O pedido começa a conectar entidades que hoje ainda estão relativamente independentes:
+The order begins to connect entities that today are still relatively independent:
 
 ```text
 Cliente
@@ -1719,83 +1719,83 @@ Pedido
 Itens
 ```
 
-Essa etapa deverá levantar questões importantes de domínio.
+This step should raise important domain questions.
 
 ---
 
-## Endereço histórico do pedido
+## Historical Address of the Order
 
-Exemplo:
+Example:
 
 ```text
-Hoje:
-Pedido #100
-→ Rua A, 123
+Today:
+Order #100
+→ Street A, 123
 
-Amanhã:
-cliente altera cadastro
-→ Rua B, 500
+Tomorrow:
+client changes registration
+→ Street B, 500
 ```
 
-O pedido antigo deveria continuar representando:
+The old order should still represent:
 
 ```text
-Rua A, 123
+Street A, 123
 ```
 
-porque aquele foi o endereço utilizado quando o pedido foi realizado.
+because that was the address used when the order was placed.
 
-Isso exigirá decidir como preservar uma fotografia histórica do endereço.
+This will require deciding how to preserve a historical snapshot of the address.
 
 ---
 
-## Estado do pedido
+## Order Status
 
-Será necessário estudar possíveis estados, como:
+It will be necessary to study possible states, such as:
 
 ```text
-Recebido
+Received
 ↓
-Confirmado
+Confirmed
 ↓
-Em produção
+In production
 ↓
-Embalado
+Packaged
 ↓
-Saiu para entrega
+Out for delivery
 ↓
-Entregue
+Delivered
 ```
 
-Também surgirão perguntas como:
+Questions will also arise such as:
 
-- pedido pode ser alterado depois de confirmado?
-- pode ser cancelado?
-- quando deixa de poder ser alterado?
-- como registrar transições de estado?
-
----
-
-## Itens de pedido
-
-O pedido também deverá representar:
-
-- refeições;
-- quantidades;
-- tipos de refeição;
-- adicionais;
-- proteínas;
-- frutas;
-- saladas;
-- personalizações;
-- substituições;
-- planos.
+- can order be changed after confirmed?
+- can it be canceled?
+- when can it no longer be changed?
+- how to record state transitions?
 
 ---
 
-# Evolução futura do domínio
+## Order Items
 
-A visão de longo prazo é:
+The order should also represent:
+
+- meals;
+- quantities;
+- meal types;
+- extras;
+- proteins;
+- fruits;
+- salads;
+- personalizations;
+- substitutions;
+- plans.
+
+---
+
+# Future Domain Evolution
+
+The long-term vision is:
 
 ```text
 Cliente
@@ -1823,156 +1823,156 @@ Roteirização
 
 ---
 
-## Produção
+## Production
 
-Pedidos individuais deverão gerar necessidades agregadas para a cozinha.
+Individual orders should generate aggregated needs for the kitchen.
 
-Exemplo:
+Example:
 
 ```text
 João
-→ 5 refeições com frango
+→ 5 meals with chicken
 
 Maria
-→ 3 refeições com frango
+→ 3 meals with chicken
 
 Pedro
-→ 4 refeições com frango
+→ 4 meals with chicken
 ```
 
-Produção:
+Production:
 
 ```text
-Frango
-→ 12 porções
+Chicken
+→ 12 portions
 ```
 
-Essa etapa deverá introduzir problemas envolvendo:
+This step should introduce problems involving:
 
-- agregação;
-- consultas;
-- datas;
-- quantidades;
-- estados;
-- consistência;
-- transações;
-- relatórios.
+- aggregation;
+- queries;
+- dates;
+- quantities;
+- states;
+- consistency;
+- transactions;
+- reports.
 
 ---
 
-## Embalagem e separação
+## Packaging and Separation
 
-Depois da produção será necessário representar:
+After production it will be necessary to represent:
 
 ```text
-produção concluída
+production completed
 ↓
-embalagem
+packaging
 ↓
-identificação
+identification
 ↓
-separação por cliente
+separation by client
 ↓
-separação por entrega
+separation by delivery
 ```
 
 ---
 
-## Entrega
+## Delivery
 
-A operação de entrega deverá considerar:
+The delivery operation should consider:
 
-- endereço escolhido;
-- data;
-- horário;
-- entregador;
+- chosen address;
+- date;
+- time;
+- delivery person;
 - status;
-- agrupamento de entregas.
+- delivery grouping.
 
 ---
 
-## Roteirização
+## Routing
 
-Uma etapa posterior poderá estudar otimização das rotas de entrega.
+A later stage may study delivery route optimization.
 
-Esse problema só será abordado quando existirem dados e fluxos suficientes para justificá-lo.
+This problem will only be addressed when there is sufficient data and flows to justify it.
 
 ---
 
-# Próximas evoluções técnicas possíveis
+# Possible Future Technical Evolutions
 
-Além da evolução do domínio, problemas futuros poderão justificar o estudo de:
+Beyond domain evolution, future problems may justify the study of:
 
 - migrations;
 - Entity Framework Core;
-- transações;
-- autenticação;
-- autorização;
-- logging estruturado;
-- tratamento global de erros;
-- observabilidade;
+- transactions;
+- authentication;
+- authorization;
+- structured logging;
+- global error handling;
+- observability;
 - caching;
 - background jobs;
-- mensageria;
-- concorrência;
+- messaging;
+- concurrency;
 - performance;
 - CI/CD;
-- deploy;
-- containers para testes;
+- deployment;
+- containers for testing;
 - Testcontainers;
-- arquitetura de software mais avançada.
+- more advanced software architecture.
 
-A ordem não é fixa.
+The order is not fixed.
 
-O problema real encontrado durante o desenvolvimento continuará determinando qual conceito será estudado em seguida.
-
----
-
-# Visão do projeto
-
-A Sabor Santè envolve muito mais do que CRUD.
-
-A operação possui desafios relacionados a:
-
-- clientes;
-- múltiplos endereços;
-- cardápios semanais;
-- refeições tradicionais;
-- refeições low carb;
-- refeições vegetarianas;
-- saladas;
-- proteínas;
-- frutas;
-- adicionais;
-- planos;
-- personalizações;
-- substituições;
-- pedidos;
-- produção;
-- capacidade diária;
-- horários de corte;
-- embalagem;
-- separação;
-- entregadores;
-- entregas;
-- roteirização.
-
-A intenção é modelar essas áreas progressivamente, conforme cada problema passa a existir concretamente no sistema.
+The real problem encountered during development will continue to determine which concept will be studied next.
 
 ---
 
-# Estado atual
+# Project Vision
 
-Neste ponto o projeto já deixou de ser apenas um CRUD básico.
+Sabor Santè involves much more than CRUD.
 
-Ele possui:
+The operation has challenges related to:
+
+- clients;
+- multiple addresses;
+- weekly menus;
+- traditional meals;
+- low carb meals;
+- vegetarian meals;
+- salads;
+- proteins;
+- fruits;
+- extras;
+- plans;
+- personalizations;
+- substitutions;
+- orders;
+- production;
+- daily capacity;
+- cutoff times;
+- packaging;
+- separation;
+- delivery persons;
+- deliveries;
+- routing.
+
+The intention is to model these areas progressively, as each problem begins to exist concretely in the system.
+
+---
+
+# Current Status
+
+At this point the project is no longer just a basic CRUD.
+
+It has:
 
 ```text
-API REST
+REST API
 +
 PostgreSQL
 +
-SQL manual
+Manual SQL
 +
 Dependency Injection
 +
@@ -1984,39 +1984,39 @@ Interfaces
 +
 Result Pattern
 +
-Validação
+Validation
 +
-Normalização
+Normalization
 +
 Soft Delete
 +
-Reativação
+Reactivation
 +
 Partial Unique Index
 +
-Relacionamentos
+Relationships
 +
 Foreign Keys
 +
 Ownership
 +
-Testes Unitários
+Unit Tests
 +
 Fakes
 +
-Testes de Integração
+Integration Tests
 +
-Banco exclusivo de testes
+Exclusive test database
 +
 Fixtures
 +
-Isolamento
+Isolation
 +
-Controle de concorrência
+Concurrency control
 +
-Testes HTTP automatizados
+Automated HTTP tests
 +
 WebApplicationFactory
 ```
 
-O próximo objetivo é usar essa base para começar a modelar partes mais importantes do domínio da operação, começando por **Pedidos**.
+The next goal is to use this foundation to begin modeling more important parts of the operation domain, starting with **Orders**.
